@@ -1,8 +1,7 @@
 import { NimbleDMHelperApp } from './dm-helper-app.js';
 import { registerSettings } from './settings.js';
 import { registerHooks } from './hooks.js';
-
-const MODULE_ID = 'nimble-dm-helper';
+import { MODULE_ID, MODULE_PATH } from './constants.js';
 
 Hooks.once('init', async () => {
   console.log(`${MODULE_ID} | Initializing Nimble DM Helper`);
@@ -10,9 +9,14 @@ Hooks.once('init', async () => {
   registerHandlebarsHelpers();
 
   // Precharger les templates partials
-  await foundry.applications.handlebars.loadTemplates([
-    'modules/nimble-dm-helper/templates/partials/character-card.hbs'
-  ]);
+  const partialPath = `${MODULE_PATH}/templates/partials/character-card.hbs`;
+  await foundry.applications.handlebars.loadTemplates([partialPath]);
+
+  // Enregistrer le partial avec un alias court pour éviter les chemins hardcodés
+  const partialContent = Handlebars.partials[partialPath];
+  if (partialContent) {
+    Handlebars.registerPartial('nimble-character-card', partialContent);
+  }
 });
 
 // Bouton dans les scene controls - doit etre enregistre avant 'ready'
@@ -29,8 +33,8 @@ Hooks.on('getSceneControlButtons', (controls) => {
   // Foundry v13+ : controls.tokens.tools est un objet, pas un array
   const tokenControls = controls.tokens;
   if (tokenControls?.tools) {
-    tokenControls.tools['nimble-dm-helper'] = {
-      name: 'nimble-dm-helper',
+    tokenControls.tools[MODULE_ID] = {
+      name: MODULE_ID,
       title: 'NIMBLE_DM_HELPER.title',
       icon: 'fas fa-users-cog',
       button: true,

@@ -1,4 +1,4 @@
-const MODULE_ID = 'nimble-dm-helper';
+import { MODULE_ID } from './constants.js';
 
 export function registerSettings() {
   // Keybinding pour toggle

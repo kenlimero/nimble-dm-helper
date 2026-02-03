@@ -1,7 +1,7 @@
 import { ResourceTracker } from './resource-tracker.js';
 import { CLASS_CONFIGS } from './class-configs/index.js';
+import { MODULE_ID, MODULE_PATH } from './constants.js';
 
-const MODULE_ID = 'nimble-dm-helper';
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
@@ -16,7 +16,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   static DEFAULT_OPTIONS = {
-    id: 'nimble-dm-helper',
+    id: MODULE_ID,
     classes: ['nimble-dm-helper', 'sheet'],
     position: {
       width: 420,
@@ -46,7 +46,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
 
   static PARTS = {
     main: {
-      template: 'modules/nimble-dm-helper/templates/dm-helper.hbs',
+      template: `${MODULE_PATH}/templates/dm-helper.hbs`,
       scrollable: ['.dm-helper-content']
     }
   };
