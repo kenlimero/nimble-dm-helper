@@ -1,0 +1,12 @@
+<div class="dm-helper-container {{#if isCompact}}compact{{/if}}">
+  <section class="dm-helper-content">
+    {{#each characters}}
+      {{> "nimble-character-card"}}
+    {{else}}
+      <div class="no-characters">
+        <i class="fas fa-users-slash"></i>
+        <p>{{localize "NIMBLE_DM_HELPER.noCharacters"}}</p>
+      </div>
+    {{/each}}
+  </section>
+</div>
