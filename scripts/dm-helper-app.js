@@ -250,7 +250,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         id: f.id,
         name: f.name,
         description: (f.system?.description?.value ?? f.system?.description ?? '')
-          .replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, '<strong>$1</strong>'),
+          .replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, '<strong>$1</strong>')
+          .replace(/\[\[\/r\s+([^\]]*)\]\]/g, '$1'),
         minLevel: f.system?.level ?? f.system?.minLevel ?? 1,
         available: true
       }))
@@ -305,7 +306,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       const displayEl = poolEl.querySelector('.dice-display');
       if (!displayEl) return;
 
-      const showDelete = context.settings?.showDeleteAbility;
       const dieSize = poolEl.dataset.dieSize || 'd6';
       let slotsHtml = '';
       for (let i = 0; i < max; i++) {
@@ -313,7 +313,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         const isEmpty = value === 0;
         const emptyClass = isEmpty ? 'empty' : '';
         slotsHtml += `<span class="die-slot" data-index="${i}"><span class="die-value die-${dieSize} ${emptyClass}" data-index="${i}" data-value="${value}" style="--die-color: ${color}; background: ${isEmpty ? 'rgba(0,0,0,0.3)' : color};">${value}</span>`;
-        if (showDelete && !isEmpty) {
+        if (!isEmpty) {
           slotsHtml += `<button class="die-delete" data-index="${i}" title="${game.i18n.localize('NIMBLE_DM_HELPER.clearDice')}"><i class="fas fa-times"></i></button>`;
         }
         slotsHtml += `</span>`;

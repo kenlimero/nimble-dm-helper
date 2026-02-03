@@ -109,10 +109,8 @@
       <div class="value-display">
         <span class="die-slot">
           <span class="single-value" data-action="editSingleValue" data-value="{{storedValue}}" style="--die-color: {{color}}; background: {{#if storedValue}}{{color}}{{else}}rgba(0,0,0,0.3){{/if}};">{{storedValue}}</span>
-          {{#if @root.settings.showDeleteAbility}}
           {{#if storedValue}}
           <button class="die-delete" type="button" data-action="clearSingleValue" data-resource="{{key}}" title="{{localize 'NIMBLE_DM_HELPER.clearDice'}}"><i class="fas fa-times"></i></button>
-          {{/if}}
           {{/if}}
         </span>
       </div>
