@@ -1,0 +1,54 @@
+{
+  "NIMBLE_DM_HELPER": {
+    "title": "Assistant MJ Nimble",
+    "refresh": "Actualiser",
+    "settings": "Parametres",
+    "openSheet": "Cliquer pour ouvrir la fiche",
+    "noCharacters": "Aucun personnage joueur trouve",
+    "abilities": "Capacites",
+
+    "resources": {
+      "hp": "Points de vie",
+      "tempHp": "PV temporaires",
+      "wounds": "Blessures",
+      "mana": "Mana",
+      "fury": "Dés de Fureur",
+      "furyDice": "Dés de Fureur",
+      "rage": "Rage",
+      "judgmentDice": "Des de Jugement",
+      "layOnHands": "Imposition des mains",
+      "combatDice": "Des de Combat",
+      "coordinatedStrike": "Frappe coordonnee",
+      "thrillOfHunt": "Frisson de la chasse",
+      "huntersMark": "Marque du chasseur",
+      "burstOfSpeed": "Explosion de vitesse",
+      "beastshift": "Forme bestiale",
+      "inspiration": "Inspiration",
+      "pilferedPower": "Pouvoir derobe",
+      "shadowMinions": "Serviteurs d'ombre",
+      "searingLight": "Lumiere ardente",
+      "sneakAttack": "Attaque sournoise",
+      "cheatUses": "Triche"
+    },
+
+    "keybinding": {
+      "toggle": "Afficher/Masquer l'Assistant MJ",
+      "toggleHint": "Ouvre ou ferme la fenetre de l'Assistant MJ"
+    },
+
+    "notifications": {
+      "dicePoolFull": "Le pool de dés est plein!"
+    },
+
+    "settings": {
+      "showToolbarButton": "Afficher le bouton",
+      "showToolbarButtonHint": "Affiche un bouton dans les controles de token pour ouvrir l'Assistant",
+      "compactMode": "Mode compact",
+      "compactModeHint": "Utilise un affichage plus compact avec des elements plus petits et sans controles",
+      "showAbilities": "Afficher les capacites",
+      "showAbilitiesHint": "Affiche la section des capacites de classe sur les cartes",
+      "filterByPresence": "Filtrer par presence",
+      "filterByPresenceHint": "N'affiche que les personnages des joueurs connectes qui les ont definis comme personnage principal"
+    }
+  }
+}

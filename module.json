@@ -1,0 +1,42 @@
+{
+  "id": "nimble-dm-helper",
+  "title": "Nimble DM Helper",
+  "description": "A GM companion module for the Nimble RPG system. Provides a floating window to track PC resources and abilities at a glance.",
+  "version": "0.9.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13",
+    "maximum": "13"
+  },
+  "authors": [
+    {
+      "name": "Kenlimero"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "nimble",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "esmodules": ["scripts/module.js"],
+  "styles": ["styles/dm-helper.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    },
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "languages/fr.json"
+    }
+  ],
+  "socket": true,
+  "manifest": "https://github.com/kenlimero/nimble-dm-helper/releases/latest/download/module.json",
+  "download": "https://github.com/kenlimero/nimble-dm-helper/releases/latest/download/module.zip"
+}
