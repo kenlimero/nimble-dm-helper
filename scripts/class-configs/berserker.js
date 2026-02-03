@@ -6,6 +6,7 @@ export const berserkerConfig = {
       requiresFeature: 'Rage',
       canStoreDice: true,
       maxStat: 'str',
+      resetOn: 'combatEnd',
       dieProgression: [
         { level: 1, dieSize: 'd4' },
         { level: 6, dieSize: 'd6' },

@@ -53,6 +53,29 @@ export function registerHooks() {
     }
   });
 
+  // Detecter un rest via le chat message du systeme Nimble (safeRest, fieldRest)
+  Hooks.on('createChatMessage', (message, options, userId) => {
+    if (!game.user.isGM) return;
+
+    const restType = message.type;
+    if (restType !== 'safeRest' && restType !== 'fieldRest') return;
+
+    const actorId = message.speaker?.actor;
+    if (!actorId) return;
+
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+
+    const resourceTracker = game.nimbleDMHelper?.app?.resourceTracker;
+    if (!resourceTracker) return;
+
+    resourceTracker.resetRestResources(actor, restType).then(() => {
+      ui.notifications.info(
+        game.i18n.format('NIMBLE_DM_HELPER.notifications.restReset', { name: actor.name })
+      );
+    });
+  });
+
   // Reset ressources au debut du combat
   Hooks.on('combatStart', (combat, options) => {
     if (!game.user.isGM) return;
@@ -63,6 +86,19 @@ export function registerHooks() {
   Hooks.on('combatRound', (combat, updateData, options) => {
     if (!game.user.isGM) return;
     resetRoundResources();
+  });
+
+  // Reset ressources a la fin du combat (resetOn: 'combatEnd')
+  Hooks.on('deleteCombat', (combat, options, userId) => {
+    if (!game.user.isGM) return;
+
+    const resourceTracker = game.nimbleDMHelper?.app?.resourceTracker;
+    if (!resourceTracker) return;
+
+    game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner)
+      .forEach(actor => {
+        resourceTracker.resetRestResources(actor, 'combatEnd');
+      });
   });
 
 }

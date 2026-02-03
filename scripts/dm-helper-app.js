@@ -40,7 +40,9 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       refresh: NimbleDMHelperApp._onRefresh,
       rollDice: NimbleDMHelperApp._onRollDice,
       clearDice: NimbleDMHelperApp._onClearDice,
-      editSingleValue: NimbleDMHelperApp._onEditSingleValue
+      editSingleValue: NimbleDMHelperApp._onEditSingleValue,
+      clearSingleValue: NimbleDMHelperApp._onClearSingleValue,
+      deleteAbility: NimbleDMHelperApp._onDeleteAbility
     }
   };
 
@@ -89,6 +91,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     data.settings = {
       showAbilities: game.settings.get(MODULE_ID, 'showAbilities'),
+      showDeleteAbility: game.settings.get(MODULE_ID, 'showDeleteAbility'),
       compactMode: game.settings.get(MODULE_ID, 'compactMode')
     };
 
@@ -246,7 +249,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       .map(f => ({
         id: f.id,
         name: f.name,
-        description: f.system?.description?.value ?? f.system?.description ?? '',
+        description: (f.system?.description?.value ?? f.system?.description ?? '')
+          .replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, '<strong>$1</strong>'),
         minLevel: f.system?.level ?? f.system?.minLevel ?? 1,
         available: true
       }))
@@ -301,18 +305,36 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       const displayEl = poolEl.querySelector('.dice-display');
       if (!displayEl) return;
 
+      const showDelete = context.settings?.showDeleteAbility;
+      const dieSize = poolEl.dataset.dieSize || 'd6';
       let slotsHtml = '';
       for (let i = 0; i < max; i++) {
         const value = values[i] ?? 0;
         const isEmpty = value === 0;
         const emptyClass = isEmpty ? 'empty' : '';
-        slotsHtml += `<span class="die-value ${emptyClass}" data-index="${i}" data-value="${value}" style="background: ${isEmpty ? 'rgba(0,0,0,0.3)' : color};">${value}</span>`;
+        slotsHtml += `<span class="die-slot" data-index="${i}"><span class="die-value die-${dieSize} ${emptyClass}" data-index="${i}" data-value="${value}" style="--die-color: ${color}; background: ${isEmpty ? 'rgba(0,0,0,0.3)' : color};">${value}</span>`;
+        if (showDelete && !isEmpty) {
+          slotsHtml += `<button class="die-delete" data-index="${i}" title="${game.i18n.localize('NIMBLE_DM_HELPER.clearDice')}"><i class="fas fa-times"></i></button>`;
+        }
+        slotsHtml += `</span>`;
       }
       displayEl.innerHTML = slotsHtml;
 
       // Ajouter les event listeners pour l'edition au clic
       displayEl.querySelectorAll('.die-value').forEach(dieEl => {
         dieEl.addEventListener('click', (event) => this._onEditDieValue(event, actorId, resourceKey));
+      });
+
+      // Ajouter les event listeners pour la suppression
+      displayEl.querySelectorAll('.die-delete').forEach(delEl => {
+        delEl.addEventListener('click', async (event) => {
+          event.stopPropagation();
+          const index = parseInt(delEl.dataset.index);
+          const actor = game.actors.get(actorId);
+          if (!actor) return;
+          await this.resourceTracker.setDieValue(actor, resourceKey, index, 0);
+          this.render();
+        });
       });
     });
 
@@ -321,10 +343,38 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       el.addEventListener('dblclick', this._onEditValue.bind(this));
     });
 
-    // Hover sur abilite = tooltip via title
+    // Hover sur abilite = tooltip HTML custom
     html.querySelectorAll('.ability-item').forEach(el => {
       const desc = el.dataset.description;
-      if (desc) el.title = desc;
+      if (!desc) return;
+
+      el.addEventListener('mouseenter', () => {
+        let tooltip = document.getElementById('ndh-ability-tooltip');
+        if (!tooltip) {
+          tooltip = document.createElement('div');
+          tooltip.id = 'ndh-ability-tooltip';
+          document.body.appendChild(tooltip);
+        }
+        tooltip.innerHTML = desc;
+        tooltip.classList.add('visible');
+
+        const rect = el.getBoundingClientRect();
+        tooltip.style.left = `${rect.left}px`;
+        tooltip.style.top = `${rect.bottom + 6}px`;
+
+        // Ajuster si le tooltip dépasse à droite
+        requestAnimationFrame(() => {
+          const tooltipRect = tooltip.getBoundingClientRect();
+          if (tooltipRect.right > window.innerWidth - 8) {
+            tooltip.style.left = `${window.innerWidth - tooltipRect.width - 8}px`;
+          }
+        });
+      });
+
+      el.addEventListener('mouseleave', () => {
+        const tooltip = document.getElementById('ndh-ability-tooltip');
+        if (tooltip) tooltip.classList.remove('visible');
+      });
     });
   }
 
@@ -445,6 +495,52 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     await this.resourceTracker.clearDice(actor, resource);
     this.render();
+  }
+
+  /**
+   * Remet a zero une valeur unique (action)
+   */
+  static async _onClearSingleValue(event, target) {
+    event.preventDefault();
+    const card = target.closest('.character-card');
+    const actorId = card?.dataset?.actorId;
+    const resource = target.dataset.resource || target.closest('[data-resource]')?.dataset?.resource;
+
+    if (!actorId || !resource) return;
+
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+
+    await this.resourceTracker.setSingleValue(actor, resource, 0);
+    this.render();
+  }
+
+  /**
+   * Supprime une habileté (feature) de l'acteur (action)
+   */
+  static async _onDeleteAbility(event, target) {
+    event.preventDefault();
+    const card = target.closest('.character-card');
+    const actorId = card?.dataset?.actorId;
+    const abilityId = target.dataset.abilityId || target.closest('[data-ability-id]')?.dataset?.abilityId;
+
+    if (!actorId || !abilityId) return;
+
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+
+    const item = actor.items.get(abilityId);
+    if (!item) return;
+
+    const confirm = await foundry.applications.api.DialogV2.confirm({
+      window: { title: game.i18n.localize('NIMBLE_DM_HELPER.deleteAbility') },
+      content: `<p>${game.i18n.format('NIMBLE_DM_HELPER.deleteAbilityConfirm', { name: item.name })}</p>`
+    });
+
+    if (confirm) {
+      await item.delete();
+      this.render();
+    }
   }
 
   /**

@@ -6,6 +6,9 @@
     "openSheet": "Click to open character sheet",
     "noCharacters": "No player characters found",
     "abilities": "Abilities",
+    "deleteAbility": "Delete Ability",
+    "clearDice": "Clear all dice",
+    "deleteAbilityConfirm": "Delete the ability <strong>{name}</strong>? This cannot be undone.",
 
     "resources": {
       "hp": "Hit Points",
@@ -37,7 +40,9 @@
     },
 
     "notifications": {
-      "dicePoolFull": "Dice pool is full!"
+      "dicePoolFull": "Dice pool is full!",
+      "safeRestReset": "Safe Rest: {name}'s resources have been reset",
+      "restReset": "{name}'s resources have been reset"
     },
 
     "settings": {
@@ -47,6 +52,8 @@
       "compactModeHint": "Use a more compact display with smaller elements and hidden controls",
       "showAbilities": "Show Abilities",
       "showAbilitiesHint": "Display class abilities section on character cards",
+      "showDeleteAbility": "Show Delete Ability Button",
+      "showDeleteAbilityHint": "Display a delete button on abilities to remove them from the character",
       "filterByPresence": "Filter by Player Presence",
       "filterByPresenceHint": "Only show characters of connected players who have them set as main character"
     }

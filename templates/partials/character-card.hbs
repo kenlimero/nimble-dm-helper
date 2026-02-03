@@ -87,6 +87,7 @@
         <span class="resource-label">{{localize label}}</span>
         <span class="dice-info">
           <span class="die-size-badge" style="background: {{color}};">{{dieSize}}</span>
+          <span class="value-max">max: {{max}}</span>
         </span>
       </div>
       <div class="dice-display" data-color="{{color}}">
@@ -97,7 +98,7 @@
 
     {{!-- Single Value Resources (canStoreValue) --}}
     {{#each valueResources}}
-    <div class="value-resource {{key}}-value" data-resource="{{key}}" style="border-left: 3px solid {{color}};">
+    <div class="value-resource {{key}}-value" data-resource="{{key}}" data-die-size="{{dieSize}}" style="border-left: 3px solid {{color}};">
       <div class="value-header">
         <span class="resource-label">{{localize label}}</span>
         <span class="value-info">
@@ -106,7 +107,14 @@
         </span>
       </div>
       <div class="value-display">
-        <span class="single-value" data-action="editSingleValue" data-value="{{storedValue}}" style="background: {{#if storedValue}}{{color}}{{else}}rgba(0,0,0,0.3){{/if}};">{{storedValue}}</span>
+        <span class="die-slot">
+          <span class="single-value" data-action="editSingleValue" data-value="{{storedValue}}" style="--die-color: {{color}}; background: {{#if storedValue}}{{color}}{{else}}rgba(0,0,0,0.3){{/if}};">{{storedValue}}</span>
+          {{#if @root.settings.showDeleteAbility}}
+          {{#if storedValue}}
+          <button class="die-delete" type="button" data-action="clearSingleValue" data-resource="{{key}}" title="{{localize 'NIMBLE_DM_HELPER.clearDice'}}"><i class="fas fa-times"></i></button>
+          {{/if}}
+          {{/if}}
+        </span>
       </div>
     </div>
     {{/each}}
@@ -269,8 +277,11 @@
     <div class="ability-section-header">{{localize "NIMBLE_DM_HELPER.abilities"}}</div>
     <div class="ability-list">
       {{#each abilities}}
-        <span class="ability-item {{#unless available}}unavailable{{/unless}}" data-description="{{description}}" title="{{description}}">
+        <span class="ability-item {{#unless available}}unavailable{{/unless}}" data-description="{{description}}">
           {{name}}
+          {{#if @root.settings.showDeleteAbility}}
+          <button class="ability-delete" type="button" data-action="deleteAbility" data-ability-id="{{id}}" title="{{localize 'NIMBLE_DM_HELPER.deleteAbility'}}"><i class="fas fa-trash-alt"></i></button>
+          {{/if}}
         </span>
       {{/each}}
     </div>

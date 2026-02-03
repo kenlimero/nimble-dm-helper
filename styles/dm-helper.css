@@ -2,23 +2,27 @@
    NIMBLE DM HELPER - STYLES
    ============================================ */
 
-/* Variables */
+/* Variables - Palette inspirée du système Nimble */
 .nimble-dm-helper {
-  --ndh-primary: #7B68EE;
-  --ndh-secondary: #4a4a4a;
-  --ndh-bg: #1a1a2e;
-  --ndh-card-bg: #16213e;
-  --ndh-border: #0f3460;
-  --ndh-text: #e8e8e8;
-  --ndh-text-muted: #a0a0a0;
-  --ndh-hp-full: #4CAF50;
-  --ndh-hp-mid: #FFC107;
-  --ndh-hp-low: #F44336;
-  --ndh-mana: #2196F3;
+  /* Couleurs principales Nimble (thème sombre) */
+  --ndh-primary: hsl(41, 18%, 54%);           /* Marron-beige accent */
+  --ndh-primary-light: hsl(41, 18%, 64%);     /* Marron-beige clair (hover) */
+  --ndh-secondary: hsl(293, 10%, 25%);        /* Pourpre foncé */
+  --ndh-bg: hsl(293, 10%, 17%);               /* Fond très sombre pourpre */
+  --ndh-card-bg: hsl(0, 0%, 20%);             /* Fond cartes gris sombre */
+  --ndh-border: hsl(293, 10%, 30%);           /* Bordures pourpre */
+  --ndh-text: hsl(36, 53%, 80%);              /* Texte beige clair */
+  --ndh-text-muted: hsl(36, 25%, 55%);        /* Texte atténué */
+
+  /* Couleurs de ressources */
+  --ndh-hp-full: hsl(109, 50%, 40%);          /* Vert santé */
+  --ndh-hp-mid: hsl(45, 100%, 50%);           /* Jaune avertissement */
+  --ndh-hp-low: hsl(1, 75%, 50%);             /* Rouge danger */
+  --ndh-mana: #2680d9;                        /* Bleu mana (Nimble) */
   --ndh-temp-hp: #9C27B0;
-  --ndh-fury: #DC143C;
-  --ndh-judgment: #FFD700;
-  --ndh-combat: #795548;
+  --ndh-fury: #bf4040;                        /* Rouge fureur (Nimble) */
+  --ndh-judgment: #cca633;                    /* Or jugement (Nimble) */
+  --ndh-combat: #9f9175;                      /* Marron-gris combat (Nimble) */
 }
 
 /* Window styling */
@@ -96,7 +100,7 @@
 }
 
 .character-card:hover {
-  box-shadow: 0 0 12px rgba(123, 104, 238, 0.4);
+  box-shadow: 0 0 12px hsla(41, 18%, 54%, 0.4);
   border-color: var(--ndh-primary);
 }
 
@@ -208,7 +212,6 @@
 }
 
 .hp-bar {
-  background: linear-gradient(to right, var(--ndh-hp-full), var(--ndh-hp-full));
 }
 
 .mana-bar {
@@ -408,13 +411,40 @@
 }
 
 .dice-btn.roll-dice:hover {
-  background: #4CAF50;
-  border-color: #4CAF50;
+  background: var(--ndh-hp-full);
+  border-color: var(--ndh-hp-full);
 }
 
 .dice-btn.clear-dice:hover {
   background: var(--ndh-hp-low);
   border-color: var(--ndh-hp-low);
+}
+
+.die-slot {
+  position: relative;
+  display: inline-flex;
+}
+
+.die-delete {
+  all: unset;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: var(--ndh-hp-low, #F44336);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.die-delete:hover {
+  transform: scale(1.2);
 }
 
 .die-value {
@@ -437,7 +467,8 @@
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+  position: relative;
 }
 
 .die-value:hover {
@@ -446,14 +477,11 @@
 }
 
 .die-value.empty {
-  background: rgba(0, 0, 0, 0.3) !important;
   color: var(--ndh-text-muted);
-  border: 2px dashed var(--ndh-border);
   box-shadow: none;
 }
 
 .die-value.empty:hover {
-  border-color: var(--ndh-primary);
   color: var(--ndh-text);
 }
 
@@ -471,6 +499,121 @@
 .die-value.combatDice,
 .die-value.combat {
   background: var(--ndh-combat);
+}
+
+/* ============================================
+   DIE SHAPE STYLING (mask-image SVG on ::before)
+   ============================================ */
+
+/* -- Base pour tous les dés shapés (non-d6) -- */
+.die-value.die-d4, .die-value.die-d8,
+.die-value.die-d10, .die-value.die-d12, .die-value.die-d20 {
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent !important;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+.die-value.die-d4:hover, .die-value.die-d8:hover,
+.die-value.die-d10:hover, .die-value.die-d12:hover, .die-value.die-d20:hover {
+  box-shadow: none;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+/* Pseudo-element commun : fond coloré masqué par le SVG, derrière le texte */
+.die-value.die-d4::before, .die-value.die-d8::before,
+.die-value.die-d10::before, .die-value.die-d12::before, .die-value.die-d20::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--die-color, rgba(0, 0, 0, 0.3));
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  z-index: -1;
+}
+
+/* -- d4 Triangle -- */
+.die-value.die-d4 {
+  width: 34px;
+  height: 30px;
+}
+
+.die-value.die-d4::before {
+  -webkit-mask-image: url('../assets/dices/d4.svg');
+  mask-image: url('../assets/dices/d4.svg');
+}
+
+/* -- d6 Carré (inchangé, pas de mask) -- */
+.die-value.die-d6.empty {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 2px dashed var(--ndh-border);
+}
+
+.die-value.die-d6.empty:hover {
+  border-color: var(--ndh-primary);
+}
+
+/* -- d8 Octaèdre -- */
+.die-value.die-d8 {
+  width: 30px;
+  height: 36px;
+  font-size: 0.8rem;
+}
+
+.die-value.die-d8::before {
+  -webkit-mask-image: url('../assets/dices/d8.svg');
+  mask-image: url('../assets/dices/d8.svg');
+}
+
+/* -- d10 Décaèdre -- */
+.die-value.die-d10 {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+}
+
+.die-value.die-d10::before {
+  -webkit-mask-image: url('../assets/dices/d10.svg');
+  mask-image: url('../assets/dices/d10.svg');
+}
+
+/* -- d12 Dodécaèdre -- */
+.die-value.die-d12 {
+  width: 32px;
+  height: 34px;
+  font-size: 0.8rem;
+}
+
+.die-value.die-d12::before {
+  -webkit-mask-image: url('../assets/dices/d12.svg');
+  mask-image: url('../assets/dices/d12.svg');
+}
+
+/* -- d20 Icosaèdre -- */
+.die-value.die-d20 {
+  width: 30px;
+  height: 36px;
+  font-size: 0.8rem;
+}
+
+.die-value.die-d20::before {
+  -webkit-mask-image: url('../assets/dices/d20.svg');
+  mask-image: url('../assets/dices/d20.svg');
+}
+
+/* -- Empty state pour dés shapés -- */
+.die-value.die-d4.empty::before, .die-value.die-d8.empty::before,
+.die-value.die-d10.empty::before, .die-value.die-d12.empty::before, .die-value.die-d20.empty::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.die-value.die-d4.empty:hover::before, .die-value.die-d8.empty:hover::before,
+.die-value.die-d10.empty:hover::before, .die-value.die-d12.empty:hover::before, .die-value.die-d20.empty:hover::before {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Single Value Resources (canStoreValue) */
@@ -512,19 +655,20 @@
 }
 
 .single-value {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: bold;
-  font-size: 1.4rem;
+  font-size: 0.9rem;
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+  position: relative;
 }
 
 .single-value:hover {
@@ -534,6 +678,100 @@
 
 .single-value:active {
   transform: scale(0.95);
+}
+
+/* -- Single-value die shapes (mask-image SVG on ::before) -- */
+.value-resource:not([data-die-size="d6"]) .single-value {
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  z-index: 0;
+}
+
+.value-resource:not([data-die-size="d6"]) .single-value:hover {
+  box-shadow: none;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* Pseudo-element commun single-value, derrière le texte */
+.value-resource:not([data-die-size="d6"]) .single-value::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--die-color, rgba(0, 0, 0, 0.3));
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  z-index: -1;
+}
+
+.value-resource[data-die-size="d4"] .single-value {
+  width: 34px;
+  height: 30px;
+}
+
+.value-resource[data-die-size="d4"] .single-value::before {
+  -webkit-mask-image: url('../assets/dices/d4.svg');
+  mask-image: url('../assets/dices/d4.svg');
+}
+
+.value-resource[data-die-size="d8"] .single-value {
+  width: 30px;
+  height: 36px;
+  font-size: 0.8rem;
+}
+
+.value-resource[data-die-size="d8"] .single-value::before {
+  -webkit-mask-image: url('../assets/dices/d8.svg');
+  mask-image: url('../assets/dices/d8.svg');
+}
+
+.value-resource[data-die-size="d10"] .single-value {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+}
+
+.value-resource[data-die-size="d10"] .single-value::before {
+  -webkit-mask-image: url('../assets/dices/d10.svg');
+  mask-image: url('../assets/dices/d10.svg');
+}
+
+.value-resource[data-die-size="d12"] .single-value {
+  width: 32px;
+  height: 34px;
+  font-size: 0.8rem;
+}
+
+.value-resource[data-die-size="d12"] .single-value::before {
+  -webkit-mask-image: url('../assets/dices/d12.svg');
+  mask-image: url('../assets/dices/d12.svg');
+}
+
+.value-resource[data-die-size="d20"] .single-value {
+  width: 30px;
+  height: 36px;
+  font-size: 0.8rem;
+}
+
+.value-resource[data-die-size="d20"] .single-value::before {
+  -webkit-mask-image: url('../assets/dices/d20.svg');
+  mask-image: url('../assets/dices/d20.svg');
+}
+
+/* Single-value empty state for shaped dice */
+.value-resource:not([data-die-size="d6"]) .single-value[data-value="0"]::before,
+.value-resource:not([data-die-size="d6"]) .single-value[data-value=""]::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.value-resource:not([data-die-size="d6"]) .single-value[data-value="0"]:hover::before,
+.value-resource:not([data-die-size="d6"]) .single-value[data-value=""]:hover::before {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Status badges */
@@ -609,21 +847,75 @@
 
 .ability-item {
   padding: 2px 8px;
-  background: rgba(123, 104, 238, 0.15);
+  background: hsla(41, 18%, 54%, 0.15);
   border: 1px solid var(--ndh-primary);
   border-radius: 4px;
   font-size: 0.7rem;
   cursor: help;
   transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .ability-item:hover {
-  background: rgba(123, 104, 238, 0.35);
+  background: hsla(41, 18%, 54%, 0.35);
+}
+
+.ability-delete {
+  all: unset;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--ndh-text-muted);
+  cursor: pointer;
+  font-size: 0.6rem;
+  width: 14px;
+  height: 14px;
+  transition: color 0.2s;
+}
+
+.ability-item:hover .ability-delete {
+  display: inline-flex;
+}
+
+.ability-delete:hover {
+  color: var(--ndh-hp-low, #F44336);
 }
 
 .ability-item.unavailable {
   opacity: 0.4;
   border-color: var(--ndh-secondary);
+}
+
+/* Ability tooltip */
+#ndh-ability-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 320px;
+  padding: 8px 12px;
+  background: var(--ndh-card-bg, #1a1a2e);
+  border: 1px solid var(--ndh-primary);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ndh-text, #e0e0e0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+#ndh-ability-tooltip.visible {
+  opacity: 1;
+}
+
+#ndh-ability-tooltip p {
+  margin: 0 0 4px 0;
+}
+
+#ndh-ability-tooltip p:last-child {
+  margin-bottom: 0;
 }
 
 /* No characters state */
@@ -666,7 +958,16 @@
 }
 
 .dm-helper-container.compact .ability-section {
+  margin-top: 4px;
+}
+
+.dm-helper-container.compact .ability-section .ability-section-header {
   display: none;
+}
+
+.dm-helper-container.compact .ability-item {
+  font-size: 0.7rem;
+  padding: 1px 4px;
 }
 
 .dm-helper-container.compact .resource-bar-wrapper {
@@ -688,7 +989,7 @@
 }
 
 .dm-helper-content::-webkit-scrollbar-thumb:hover {
-  background: #9B88FF;
+  background: var(--ndh-primary-light);
 }
 
 /* Responsive */

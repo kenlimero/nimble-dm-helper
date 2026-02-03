@@ -6,6 +6,7 @@ export const oathswornConfig = {
     judgmentDice: {
       requiresFeature: 'Radiant Judgement',
       canStoreValue: true,
+      resetOn: 'combatEnd',
       maxProgression: [
         { level: 1, max: 2 },
         { level: 14, max: 3 }
@@ -18,6 +19,6 @@ export const oathswornConfig = {
         { level: 10, dieSize: 'd20' }
       ]
     },
-    layOnHands: { requiresFeature: 'Lay on Hands' }
+    layOnHands: { requiresFeature: 'Lay on Hands', resetOn: 'safeRest' }
   }
 };

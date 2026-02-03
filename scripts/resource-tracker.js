@@ -586,6 +586,46 @@ export class ResourceTracker {
     );
   }
 
+  /**
+   * Reinitialise les ressources pour un acteur selon le type de rest
+   * resetOn: 'rest' = n'importe quel rest, 'safeRest' / 'fieldRest' / 'combatEnd' = specifique
+   */
+  async resetRestResources(actor, restType) {
+    const classId = this._getActorClass(actor);
+    const { CLASS_CONFIGS } = await import('./class-configs/index.js');
+    const config = CLASS_CONFIGS[classId];
+    if (!config?.resourceConditions) return;
+
+    const level = this._getActorLevel(actor);
+
+    for (const [key, condition] of Object.entries(config.resourceConditions)) {
+      if (!condition.resetOn) continue;
+      // 'rest' correspond a n'importe quel type, sinon doit correspondre exactement
+      if (condition.resetOn !== 'rest' && condition.resetOn !== restType) continue;
+      if (condition.requiresFeature && !this._hasFeature(actor, condition.requiresFeature)) continue;
+
+      // Dice pools : vider le pool
+      if (condition.canStoreDice) {
+        const flagInfo = this._getFlagInfo(key);
+        await actor.setFlag(flagInfo.module, flagInfo.key, []);
+        continue;
+      }
+
+      // Single value (canStoreValue) : remettre a zero
+      if (condition.canStoreValue) {
+        const flagInfo = this._getSingleValueFlagInfo(key);
+        await actor.setFlag(flagInfo.module, flagInfo.key, 0);
+        continue;
+      }
+
+      // Ressources avec valeur : remettre au max
+      const resourceConfig = this._getResourceConfig(actor, key);
+      if (resourceConfig?.max) {
+        await actor.setFlag(MODULE_ID, key, resourceConfig.max);
+      }
+    }
+  }
+
   _getResourceConfig(actor, resourcePath) {
     // Retourne la config de ressource si disponible
     const classId = this._getActorClass(actor);

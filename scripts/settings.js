@@ -46,6 +46,17 @@ export function registerSettings() {
     onChange: () => game.nimbleDMHelper?.app?.render()
   });
 
+  // Afficher bouton suppression des abilites
+  game.settings.register(MODULE_ID, 'showDeleteAbility', {
+    name: 'NIMBLE_DM_HELPER.settings.showDeleteAbility',
+    hint: 'NIMBLE_DM_HELPER.settings.showDeleteAbilityHint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
   // Filtrer par presence des joueurs
   game.settings.register(MODULE_ID, 'filterByPresence', {
     name: 'NIMBLE_DM_HELPER.settings.filterByPresence',
