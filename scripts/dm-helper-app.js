@@ -92,7 +92,10 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     data.settings = {
       showAbilities: game.settings.get(MODULE_ID, 'showAbilities'),
       showDeleteAbility: game.settings.get(MODULE_ID, 'showDeleteAbility'),
-      compactMode: game.settings.get(MODULE_ID, 'compactMode')
+      showDicePoolMax: game.settings.get(MODULE_ID, 'showDicePoolMax'),
+      compactMode: game.settings.get(MODULE_ID, 'compactMode'),
+      mergedBars: game.settings.get(MODULE_ID, 'mergedBars'),
+      woundsOnlyAtZeroHP: game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP')
     };
 
     data.isCompact = data.settings.compactMode;
@@ -134,27 +137,25 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       level
     );
 
-    // Extraire les dice pools (ressources avec canStoreDice)
+    // Categoriser les ressources par type d'affichage
     const dicePools = [];
-    for (const [key, value] of Object.entries(classResources)) {
-      if (value && value.canStoreDice) {
-        dicePools.push({
-          key,
-          label: `NIMBLE_DM_HELPER.resources.${key}`,
-          ...value
-        });
-      }
-    }
-
-    // Extraire les value resources (ressources avec canStoreValue - une seule valeur)
     const valueResources = [];
+    const inlineResources = [];
+    const barResources = [];
+
     for (const [key, value] of Object.entries(classResources)) {
-      if (value && value.canStoreValue) {
-        valueResources.push({
-          key,
-          label: `NIMBLE_DM_HELPER.resources.${key}`,
-          ...value
-        });
+      if (!value || typeof value !== 'object') continue;
+
+      const entry = { key, label: `NIMBLE_DM_HELPER.resources.${key}`, ...value };
+
+      if (value.canStoreDice) {
+        dicePools.push(entry);
+      } else if (value.canStoreValue) {
+        valueResources.push(entry);
+      } else if (value.displayType === 'bar') {
+        barResources.push(entry);
+      } else if (value.displayType === 'inline') {
+        inlineResources.push(entry);
       }
     }
 
@@ -163,6 +164,11 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     // Conditions actives
     const conditions = this._getConditions(actor);
+
+    // Appliquer le degrade de couleur dynamique a la mana
+    if (classResources.mana) {
+      classResources.mana.color = this._getManaColor(classResources.mana);
+    }
 
     return {
       id: actor.id,
@@ -174,9 +180,12 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       resources: { ...resources, ...classResources },
       dicePools,
       valueResources,
+      inlineResources,
+      barResources,
       abilities,
       conditions,
-      hasClassResources: Object.keys(classResources).length > 0
+      hasClassResources: Object.keys(classResources).length > 0,
+      showWounds: !game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP') || (hp.value ?? 0) === 0 || (wounds.value ?? 0) > 0
     };
   }
 
@@ -236,6 +245,17 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   /**
+   * Calcule la couleur de la barre de mana
+   */
+  _getManaColor(mana) {
+    if (!mana.max || mana.max === 0) return '#2196F3';
+    const ratio = mana.value / mana.max;
+    if (ratio > 0.5) return '#2196F3';      // Bleu
+    if (ratio > 0.25) return '#7B1FA2';     // Violet
+    return '#4A148C';                        // Violet fonce
+  }
+
+  /**
    * Recupere les features de l'acteur filtrees par niveau
    */
   _getActorFeatures(actor, level) {
@@ -285,7 +305,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       let boxesHtml = '';
       for (let j = 0; j < max; j++) {
         const filled = j < current ? 'filled' : '';
-        boxesHtml += `<span class="wound-box ${filled}"></span>`;
+        boxesHtml += `<i class="wound-box fa-solid fa-droplet ${filled}"></i>`;
       }
       el.innerHTML = boxesHtml;
     });

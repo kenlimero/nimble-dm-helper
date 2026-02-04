@@ -215,7 +215,6 @@
 }
 
 .mana-bar {
-  background: linear-gradient(to right, var(--ndh-mana), #1976D2);
 }
 
 .temp-hp-indicator {
@@ -300,20 +299,17 @@
 }
 
 .wound-box {
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--ndh-hp-low);
-  border-radius: 2px;
-  transition: background 0.2s;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.2);
+  transition: color 0.2s;
 }
 
 .wound-box.filled {
-  background: var(--ndh-hp-low);
+  color: var(--ndh-hp-low);
 }
 
 .wound-box.current {
-  background: var(--ndh-hp-mid);
-  border-color: var(--ndh-hp-mid);
+  color: var(--ndh-hp-mid);
   animation: pulse 1s infinite;
 }
 
@@ -537,12 +533,14 @@
 }
 
 /* -- d4 Triangle -- */
-.die-value.die-d4 {
+.die-value.die-d4,
+.value-resource[data-die-size="d4"] .single-value {
   width: 34px;
   height: 30px;
 }
 
-.die-value.die-d4::before {
+.die-value.die-d4::before,
+.value-resource[data-die-size="d4"] .single-value::before {
   -webkit-mask-image: url('../assets/dices/d4.svg');
   mask-image: url('../assets/dices/d4.svg');
 }
@@ -558,49 +556,57 @@
 }
 
 /* -- d8 Octaèdre -- */
-.die-value.die-d8 {
+.die-value.die-d8,
+.value-resource[data-die-size="d8"] .single-value {
   width: 30px;
   height: 36px;
   font-size: 0.8rem;
 }
 
-.die-value.die-d8::before {
+.die-value.die-d8::before,
+.value-resource[data-die-size="d8"] .single-value::before {
   -webkit-mask-image: url('../assets/dices/d8.svg');
   mask-image: url('../assets/dices/d8.svg');
 }
 
 /* -- d10 Décaèdre -- */
-.die-value.die-d10 {
+.die-value.die-d10,
+.value-resource[data-die-size="d10"] .single-value {
   width: 32px;
   height: 32px;
   font-size: 0.8rem;
 }
 
-.die-value.die-d10::before {
+.die-value.die-d10::before,
+.value-resource[data-die-size="d10"] .single-value::before {
   -webkit-mask-image: url('../assets/dices/d10.svg');
   mask-image: url('../assets/dices/d10.svg');
 }
 
 /* -- d12 Dodécaèdre -- */
-.die-value.die-d12 {
+.die-value.die-d12,
+.value-resource[data-die-size="d12"] .single-value {
   width: 32px;
   height: 34px;
   font-size: 0.8rem;
 }
 
-.die-value.die-d12::before {
+.die-value.die-d12::before,
+.value-resource[data-die-size="d12"] .single-value::before {
   -webkit-mask-image: url('../assets/dices/d12.svg');
   mask-image: url('../assets/dices/d12.svg');
 }
 
 /* -- d20 Icosaèdre -- */
-.die-value.die-d20 {
+.die-value.die-d20,
+.value-resource[data-die-size="d20"] .single-value {
   width: 30px;
   height: 36px;
   font-size: 0.8rem;
 }
 
-.die-value.die-d20::before {
+.die-value.die-d20::before,
+.value-resource[data-die-size="d20"] .single-value::before {
   -webkit-mask-image: url('../assets/dices/d20.svg');
   mask-image: url('../assets/dices/d20.svg');
 }
@@ -709,59 +715,7 @@
   z-index: -1;
 }
 
-.value-resource[data-die-size="d4"] .single-value {
-  width: 34px;
-  height: 30px;
-}
-
-.value-resource[data-die-size="d4"] .single-value::before {
-  -webkit-mask-image: url('../assets/dices/d4.svg');
-  mask-image: url('../assets/dices/d4.svg');
-}
-
-.value-resource[data-die-size="d8"] .single-value {
-  width: 30px;
-  height: 36px;
-  font-size: 0.8rem;
-}
-
-.value-resource[data-die-size="d8"] .single-value::before {
-  -webkit-mask-image: url('../assets/dices/d8.svg');
-  mask-image: url('../assets/dices/d8.svg');
-}
-
-.value-resource[data-die-size="d10"] .single-value {
-  width: 32px;
-  height: 32px;
-  font-size: 0.8rem;
-}
-
-.value-resource[data-die-size="d10"] .single-value::before {
-  -webkit-mask-image: url('../assets/dices/d10.svg');
-  mask-image: url('../assets/dices/d10.svg');
-}
-
-.value-resource[data-die-size="d12"] .single-value {
-  width: 32px;
-  height: 34px;
-  font-size: 0.8rem;
-}
-
-.value-resource[data-die-size="d12"] .single-value::before {
-  -webkit-mask-image: url('../assets/dices/d12.svg');
-  mask-image: url('../assets/dices/d12.svg');
-}
-
-.value-resource[data-die-size="d20"] .single-value {
-  width: 30px;
-  height: 36px;
-  font-size: 0.8rem;
-}
-
-.value-resource[data-die-size="d20"] .single-value::before {
-  -webkit-mask-image: url('../assets/dices/d20.svg');
-  mask-image: url('../assets/dices/d20.svg');
-}
+/* (Die shapes for single-value are now merged with .die-value selectors above) */
 
 /* Single-value empty state for shaped dice */
 .value-resource:not([data-die-size="d6"]) .single-value[data-value="0"]::before,
@@ -972,6 +926,55 @@
 
 .dm-helper-container.compact .resource-bar-wrapper {
   height: 10px;
+}
+
+/* Merged bars mode */
+.merged-bar .resource-bar-wrapper {
+  height: 20px;
+  position: relative;
+}
+
+.merged-bar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.merged-bar-overlay .resource-label {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.merged-bar-overlay .resource-value {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.merged-bar-values {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.merged-temp-hp {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: var(--ndh-temp-hp);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* Scrollbar custom */

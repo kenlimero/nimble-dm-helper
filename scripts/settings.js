@@ -57,6 +57,39 @@ export function registerSettings() {
     onChange: () => game.nimbleDMHelper?.app?.render()
   });
 
+  // Afficher le max des dice pools
+  game.settings.register(MODULE_ID, 'showDicePoolMax', {
+    name: 'NIMBLE_DM_HELPER.settings.showDicePoolMax',
+    hint: 'NIMBLE_DM_HELPER.settings.showDicePoolMaxHint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
+  // Barres fusionnees (label + valeur sur la barre)
+  game.settings.register(MODULE_ID, 'mergedBars', {
+    name: 'NIMBLE_DM_HELPER.settings.mergedBars',
+    hint: 'NIMBLE_DM_HELPER.settings.mergedBarsHint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
+  // Afficher wounds uniquement a 0 HP
+  game.settings.register(MODULE_ID, 'woundsOnlyAtZeroHP', {
+    name: 'NIMBLE_DM_HELPER.settings.woundsOnlyAtZeroHP',
+    hint: 'NIMBLE_DM_HELPER.settings.woundsOnlyAtZeroHPHint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
   // Filtrer par presence des joueurs
   game.settings.register(MODULE_ID, 'filterByPresence', {
     name: 'NIMBLE_DM_HELPER.settings.filterByPresence',

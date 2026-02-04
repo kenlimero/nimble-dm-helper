@@ -54,6 +54,12 @@
       "showAbilitiesHint": "Display class abilities section on character cards",
       "showDeleteAbility": "Show Delete Ability Button",
       "showDeleteAbilityHint": "Display a delete button on abilities to remove them from the character",
+      "showDicePoolMax": "Show Dice Pool Max",
+      "showDicePoolMaxHint": "Display the maximum number of dice next to dice pool abilities",
+      "mergedBars": "Merged Resource Bars",
+      "mergedBarsHint": "Combine the label and value with the resource bar on a single line for HP and Mana. Hides temporary HP when enabled.",
+      "woundsOnlyAtZeroHP": "Show Wounds Only at 0 HP",
+      "woundsOnlyAtZeroHPHint": "Only display the wounds tracker when a character has 0 hit points",
       "filterByPresence": "Filter by Player Presence",
       "filterByPresenceHint": "Only show characters of connected players who have them set as main character"
     }

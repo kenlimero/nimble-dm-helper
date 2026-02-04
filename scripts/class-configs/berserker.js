@@ -5,8 +5,11 @@ export const berserkerConfig = {
     fury: {
       requiresFeature: 'Rage',
       canStoreDice: true,
+      color: '#DC143C',
       maxStat: 'str',
       resetOn: 'combatEnd',
+      storageModule: 'system',
+      storageKey: 'furyDice',
       dieProgression: [
         { level: 1, dieSize: 'd4' },
         { level: 6, dieSize: 'd6' },
@@ -14,6 +17,10 @@ export const berserkerConfig = {
         { level: 13, dieSize: 'd10' },
         { level: 17, dieSize: 'd12' }
       ]
+    },
+    rageActive: {
+      type: 'statusEffect',
+      effectName: 'rage'
     }
   }
 };

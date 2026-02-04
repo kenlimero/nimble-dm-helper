@@ -54,6 +54,12 @@
       "showAbilitiesHint": "Affiche la section des capacites de classe sur les cartes",
       "showDeleteAbility": "Bouton supprimer capacite",
       "showDeleteAbilityHint": "Affiche un bouton de suppression sur les capacites pour les retirer du personnage",
+      "showDicePoolMax": "Afficher le max des pools de des",
+      "showDicePoolMaxHint": "Affiche le nombre maximum de des a cote des habiletes de type pool de des",
+      "mergedBars": "Barres fusionnees",
+      "mergedBarsHint": "Fusionne le libelle et la valeur avec la barre de ressource sur une seule ligne pour les PV et la Mana. Masque les PV temporaires.",
+      "woundsOnlyAtZeroHP": "Blessures uniquement a 0 PV",
+      "woundsOnlyAtZeroHPHint": "N'affiche le suivi des blessures que lorsque le personnage est a 0 points de vie",
       "filterByPresence": "Filtrer par presence",
       "filterByPresenceHint": "N'affiche que les personnages des joueurs connectes qui les ont definis comme personnage principal"
     }

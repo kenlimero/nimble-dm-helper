@@ -2,10 +2,19 @@ export const oathswornConfig = {
   name: 'Oathsworn',
   icon: 'icons/magic/holy/chalice-glowing-gold.webp',
   resourceConditions: {
-    mana: { requiresFeature: 'Mana and Radiant Spellcasting' },
+    mana: {
+      requiresFeature: 'Mana and Radiant Spellcasting',
+      type: 'mana',
+      color: '#FFD700',
+      formula: 'WIL + LVL'
+    },
     judgmentDice: {
       requiresFeature: 'Radiant Judgement',
       canStoreValue: true,
+      color: '#FFD700',
+      storageModule: 'system',
+      storageKey: 'judgmentDice',
+      singleValueKey: 'judgmentValue',
       resetOn: 'combatEnd',
       maxProgression: [
         { level: 1, max: 2 },
@@ -19,6 +28,13 @@ export const oathswornConfig = {
         { level: 10, dieSize: 'd20' }
       ]
     },
-    layOnHands: { requiresFeature: 'Lay on Hands', resetOn: 'safeRest' }
+    layOnHands: {
+      requiresFeature: 'Lay on Hands',
+      displayType: 'bar',
+      color: '#FFD700',
+      maxLevelMultiplier: 5,
+      defaultToMax: true,
+      resetOn: 'safeRest'
+    }
   }
 };

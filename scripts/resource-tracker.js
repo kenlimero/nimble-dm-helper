@@ -1,7 +1,9 @@
-import { MODULE_ID } from './constants.js';
+import { MODULE_ID, SYSTEM_MODULE_ID } from './constants.js';
+import { CLASS_CONFIGS } from './class-configs/index.js';
 
 /**
  * Gestionnaire des ressources specifiques aux classes Nimble
+ * Systeme data-driven : les ressources sont definies dans les class-configs
  */
 export class ResourceTracker {
 
@@ -10,179 +12,147 @@ export class ResourceTracker {
   }
 
   /**
-   * Recupere les ressources specifiques a une classe
+   * Recupere les ressources specifiques a une classe (data-driven)
    */
   async getClassResources(actor, classId, config, level) {
-    const system = actor.system;
     const resources = {};
     const conditions = config.resourceConditions || {};
-
-    // Recuperer les stats de l'acteur
     const stats = this._getStats(actor);
 
-    switch (classId) {
-      case 'berserker':
-        resources.fury = this._getFuryDice(actor, stats);
-        resources.rageActive = this._hasActiveEffect(actor, 'rage');
-        break;
-
-      case 'mage':
-        resources.mana = {
-          value: this._getManaValue(actor),
-          max: this._getManaMax(actor),
-          formula: 'INT × 3 + LVL',
-          color: '#2196F3'
-        };
-        break;
-
-      case 'oathsworn':
-        resources.mana = {
-          value: this._getManaValue(actor),
-          max: this._getManaMax(actor),
-          formula: 'WIL + LVL',
-          color: '#FFD700'
-        };
-        resources.judgmentDice = this._getJudgmentDice(actor);
-        resources.layOnHands = this._getLayOnHands(actor, level);
-        break;
-
-      case 'commander':
-        resources.combatDice = this._getCombatDice(actor, stats);
-        resources.coordinatedStrike = this._getCoordinatedStrike(actor, level);
-        break;
-
-      case 'hunter':
-        resources.thrillOfHunt = this._getThrillCharges(actor);
-        resources.huntersMark = this._getHuntersMark(actor);
-        break;
-
-      case 'zephyr':
-        resources.burstOfSpeed = {
-          value: actor.getFlag(MODULE_ID, 'burstOfSpeed') ?? stats.dex,
-          max: stats.dex,
-          color: '#00BCD4'
-        };
-        break;
-
-      case 'stormshifter':
-        resources.mana = {
-          value: this._getManaValue(actor),
-          max: this._getManaMax(actor),
-          formula: 'WIL × 3 + LVL',
-          color: '#9C27B0'
-        };
-        resources.beastshift = this._getBeastshiftCharges(actor, level, stats);
-        break;
-
-      case 'songweaver':
-        resources.mana = {
-          value: this._getManaValue(actor),
-          max: this._getManaMax(actor),
-          formula: 'INT × 3 + LVL',
-          color: '#E91E63'
-        };
-        resources.inspiration = {
-          value: actor.getFlag(MODULE_ID, 'inspiration') ?? stats.wil * 2,
-          max: stats.wil * 2,
-          color: '#FF9800'
-        };
-        break;
-
-      case 'shadowmancer':
-        resources.pilferedPower = {
-          value: actor.getFlag(MODULE_ID, 'pilferedPower') ?? stats.dex,
-          max: stats.dex,
-          color: '#673AB7'
-        };
-        resources.shadowMinions = {
-          value: actor.getFlag(MODULE_ID, 'shadowMinions') ?? 0,
-          max: Math.max(stats.int, level),
-          color: '#424242'
-        };
-        break;
-
-      case 'shepherd':
-        resources.mana = {
-          value: this._getManaValue(actor),
-          max: this._getManaMax(actor),
-          formula: 'WIL × 3 + LVL',
-          color: '#8BC34A'
-        };
-        resources.searingLight = {
-          value: actor.getFlag(MODULE_ID, 'searingLight') ?? stats.wil,
-          max: stats.wil,
-          color: '#FFEB3B'
-        };
-        break;
-
-      case 'cheat':
-      case 'thecheat':
-        resources.sneakAttack = {
-          available: !actor.getFlag('nimble', 'sneakAttackUsed'),
-          dieSize: this._getSneakAttackDie(level)
-        };
-        resources.cheatUses = {
-          moveOrHide: !actor.getFlag('nimble', 'cheatMoveUsed'),
-          daily: {
-            value: actor.getFlag(MODULE_ID, 'cheatDaily') ?? 1,
-            max: 1
-          }
-        };
-        break;
-    }
-
-    // Filtrer les ressources selon les conditions (requiresFeature)
-    return this._filterResourcesByConditions(actor, resources, conditions, stats, level);
-  }
-
-  /**
-   * Filtre les ressources selon les conditions definies dans la config
-   */
-  _filterResourcesByConditions(actor, resources, conditions, stats, level) {
-    const filtered = {};
-
-    for (const [key, value] of Object.entries(resources)) {
-      const condition = conditions[key];
-
-      // Pas de condition = toujours afficher
-      if (!condition) {
-        filtered[key] = value;
+    for (const [key, condition] of Object.entries(conditions)) {
+      // Verifier requiresFeature si defini
+      if (condition.requiresFeature && !this._hasFeature(actor, condition.requiresFeature)) {
         continue;
       }
 
-      // Verifier requiresFeature
-      if (condition.requiresFeature) {
-        if (this._hasFeature(actor, condition.requiresFeature)) {
-          // Calculer dieSize et max depuis la config si disponible
-          const dieSize = condition.dieProgression
-            ? this._getDieSizeFromProgression(condition.dieProgression, level)
-            : value.dieSize;
-          const max = condition.maxProgression
-            ? this._getMaxFromProgression(condition.maxProgression, level)
-            : (condition.maxStat ? stats[condition.maxStat] : value.max);
-
-          // Ajouter les proprietes de la condition a la ressource
-          filtered[key] = {
-            ...value,
-            dieSize: dieSize || value.dieSize,
-            max: max ?? value.max,
-            canStoreDice: condition.canStoreDice || false,
-            canStoreValue: condition.canStoreValue || false
-          };
-        }
+      const resource = this._computeResource(actor, key, condition, stats, level);
+      if (resource !== null && resource !== undefined) {
+        resources[key] = resource;
       }
     }
 
-    return filtered;
+    return resources;
   }
 
   /**
-   * Calcule la taille de dé selon la progression et le niveau
+   * Calcule une ressource individuelle selon sa condition/config
+   */
+  _computeResource(actor, key, condition, stats, level) {
+    // Status effects (ex: rageActive)
+    if (condition.type === 'statusEffect') {
+      return this._hasActiveEffect(actor, condition.effectName);
+    }
+
+    // Ressources speciales avec getter custom (ex: sneakAttack, cheatUses, huntersMark)
+    if (condition.type === 'special') {
+      const getter = this[condition.getter];
+      return getter ? getter.call(this, actor, level, stats) : null;
+    }
+
+    // Mana (stocke dans system.resources.mana)
+    if (condition.type === 'mana') {
+      return {
+        value: this._getManaValue(actor),
+        max: this._getManaMax(actor),
+        formula: condition.formula,
+        color: condition.color
+      };
+    }
+
+    // Dice pools (canStoreDice)
+    if (condition.canStoreDice) {
+      const flagInfo = this._getFlagInfo(key, condition);
+      const currentDice = actor.getFlag(flagInfo.module, flagInfo.key) || [];
+      const max = this._computeMax(condition, stats, level);
+      const dieSize = condition.dieProgression
+        ? this._getDieSizeFromProgression(condition.dieProgression, level)
+        : 'd6';
+      return {
+        count: currentDice.length,
+        max,
+        dieSize,
+        values: currentDice,
+        color: condition.color,
+        canStoreDice: true
+      };
+    }
+
+    // Single stored value (canStoreValue, ex: judgmentDice)
+    if (condition.canStoreValue) {
+      const flagInfo = this._getFlagInfo(key, condition);
+      const currentDice = actor.getFlag(flagInfo.module, flagInfo.key) || [];
+      const singleValueModule = condition.storageModule ? this._resolveModule(condition.storageModule) : MODULE_ID;
+      const singleValueKey = condition.singleValueKey || `${key}Value`;
+      const storedValue = actor.getFlag(singleValueModule, singleValueKey) ?? 0;
+      const max = condition.maxProgression
+        ? this._getMaxFromProgression(condition.maxProgression, level)
+        : this._computeMax(condition, stats, level);
+      const dieSize = condition.dieProgression
+        ? this._getDieSizeFromProgression(condition.dieProgression, level)
+        : 'd6';
+      return {
+        count: currentDice.length,
+        max,
+        dieSize,
+        values: currentDice,
+        storedValue,
+        color: condition.color,
+        canStoreValue: true
+      };
+    }
+
+    // Ressource generique (inline ou bar)
+    const max = this._computeMax(condition, stats, level);
+    const defaultVal = condition.defaultToMax ? max : (condition.defaultValue ?? 0);
+    return {
+      value: actor.getFlag(MODULE_ID, key) ?? defaultVal,
+      max: condition.noMax ? null : max,
+      color: condition.color,
+      displayType: condition.displayType || 'inline'
+    };
+  }
+
+  /**
+   * Calcule le max d'une ressource selon sa config
+   */
+  _computeMax(condition, stats, level) {
+    // Progression par niveau (ex: coordinatedStrike, judgmentDice)
+    if (condition.maxProgression) {
+      return this._getMaxFromProgression(condition.maxProgression, level);
+    }
+
+    // Multiplicateur de niveau (ex: layOnHands = level * 5)
+    if (condition.maxLevelMultiplier) {
+      return level * condition.maxLevelMultiplier;
+    }
+
+    // Base sur une stat
+    if (condition.maxStat) {
+      let max = stats[condition.maxStat] * (condition.maxMultiplier || 1);
+
+      // Bonus conditionnel par niveau (ex: beastshift +1 a level 6)
+      if (condition.maxLevelBonus) {
+        for (const bonus of condition.maxLevelBonus) {
+          if (level >= bonus.level) max += bonus.bonus;
+        }
+      }
+
+      // Min = level (ex: shadowMinions max(int, level))
+      if (condition.maxMinLevel) {
+        max = Math.max(max, level);
+      }
+
+      return max;
+    }
+
+    return null;
+  }
+
+  /**
+   * Calcule la taille de de selon la progression et le niveau
    */
   _getDieSizeFromProgression(progression, level) {
     if (!progression || !progression.length) return 'd6';
-
-    // Trier par niveau décroissant et trouver le premier applicable
     const sorted = [...progression].sort((a, b) => b.level - a.level);
     const applicable = sorted.find(p => level >= p.level);
     return applicable?.dieSize || progression[0].dieSize;
@@ -193,7 +163,6 @@ export class ResourceTracker {
    */
   _getMaxFromProgression(progression, level) {
     if (!progression || !progression.length) return null;
-
     const sorted = [...progression].sort((a, b) => b.level - a.level);
     const applicable = sorted.find(p => level >= p.level);
     return applicable?.max ?? progression[0].max;
@@ -204,13 +173,25 @@ export class ResourceTracker {
    */
   _hasFeature(actor, featureName) {
     if (!actor.items) return false;
-
     const normalizedName = featureName.toLowerCase().trim();
     return actor.items.some(item =>
       item.type === 'feature' &&
       item.name?.toLowerCase().trim() === normalizedName
     );
   }
+
+  /**
+   * Recupere la condition d'une ressource depuis les configs de classe
+   */
+  _getCondition(actor, resourceKey) {
+    const classId = this._getActorClass(actor);
+    const config = CLASS_CONFIGS[classId];
+    return config?.resourceConditions?.[resourceKey] || {};
+  }
+
+  // ============================================================
+  // Modification de ressources
+  // ============================================================
 
   /**
    * Modifie une ressource
@@ -227,20 +208,16 @@ export class ResourceTracker {
       const maxHp = hp.max || 0;
 
       if (delta < 0) {
-        // Degats: d'abord les HP temporaires, puis les HP normaux
         const damage = Math.abs(delta);
         const tempDamage = Math.min(damage, currentTemp);
         const remainingDamage = damage - tempDamage;
-
         const newTemp = currentTemp - tempDamage;
         const newHp = Math.max(0, currentHp - remainingDamage);
-
         await actor.update({
           [`${basePath}.temp`]: newTemp,
           [`${basePath}.value`]: newHp
         });
       } else {
-        // Soins: seulement les HP normaux
         const newHp = Math.min(maxHp, currentHp + delta);
         await actor.update({ [`${basePath}.value`]: newHp });
       }
@@ -258,13 +235,11 @@ export class ResourceTracker {
       await actor.update({ [updatePath]: newValue });
     }
     else if (resourcePath === 'mana') {
-      // Utiliser le systeme Nimble pour stocker le mana
       const mana = actor.system?.resources?.mana;
       if (mana) {
         const maxMana = mana.max || 0;
         const current = mana.value ?? mana.current ?? 0;
         const newValue = Math.clamp(current + delta, 0, maxMana);
-        // Mettre a jour value et current pour Nimble
         await actor.update({
           'system.resources.mana.value': newValue,
           'system.resources.mana.current': newValue
@@ -282,70 +257,63 @@ export class ResourceTracker {
   }
 
   /**
-   * Lance un dé et l'ajoute au premier emplacement vide du pool
+   * Lance un de et l'ajoute au premier emplacement vide du pool
    */
   async rollAndAddDie(actor, resourceKey, dieSize) {
-    const flagInfo = this._getFlagInfo(resourceKey);
+    const condition = this._getCondition(actor, resourceKey);
+    const flagInfo = this._getFlagInfo(resourceKey, condition);
     let currentDice = actor.getFlag(flagInfo.module, flagInfo.key) || [];
 
-    // Vérifier le max
     const stats = this._getStats(actor);
     const level = this._getActorLevel(actor);
-    const maxDice = this._getDicePoolMax(resourceKey, stats, level);
+    const maxDice = this._computeMax(condition, stats, level) || 10;
 
-    // S'assurer que le tableau a la bonne taille
     while (currentDice.length < maxDice) {
       currentDice.push(0);
     }
 
-    // Trouver le premier emplacement vide (valeur 0)
     const emptyIndex = currentDice.findIndex(v => v === 0);
     if (emptyIndex === -1) {
       ui.notifications.warn(game.i18n.localize('NIMBLE_DM_HELPER.notifications.dicePoolFull') || 'Pool de dés plein!');
       return;
     }
 
-    // Lancer le dé
     const roll = await new Roll(`1${dieSize}`).evaluate();
     const result = roll.total;
 
-    // Afficher le résultat dans le chat
     roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor }),
       flavor: `${game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resourceKey}`)} - Dé ajouté au pool`
     });
 
-    // Placer le résultat dans l'emplacement vide
     currentDice[emptyIndex] = result;
     await actor.setFlag(flagInfo.module, flagInfo.key, currentDice);
   }
 
   /**
-   * Vide tous les dés d'un pool
+   * Vide tous les des d'un pool
    */
   async clearDice(actor, resourceKey) {
-    const flagInfo = this._getFlagInfo(resourceKey);
+    const condition = this._getCondition(actor, resourceKey);
+    const flagInfo = this._getFlagInfo(resourceKey, condition);
     await actor.setFlag(flagInfo.module, flagInfo.key, []);
   }
 
   /**
-   * Modifie la valeur d'un dé spécifique dans le pool
+   * Modifie la valeur d'un de specifique dans le pool
    */
   async setDieValue(actor, resourceKey, index, value) {
-    const flagInfo = this._getFlagInfo(resourceKey);
+    const condition = this._getCondition(actor, resourceKey);
+    const flagInfo = this._getFlagInfo(resourceKey, condition);
     const stats = this._getStats(actor);
     const level = this._getActorLevel(actor);
-    const maxDice = this._getDicePoolMax(resourceKey, stats, level);
+    const maxDice = this._computeMax(condition, stats, level) || 10;
 
-    // Récupérer les dés actuels ou créer un tableau vide de la bonne taille
     let currentDice = actor.getFlag(flagInfo.module, flagInfo.key) || [];
-
-    // S'assurer que le tableau a la bonne taille
     while (currentDice.length < maxDice) {
       currentDice.push(0);
     }
 
-    // Modifier la valeur à l'index
     if (index >= 0 && index < maxDice) {
       currentDice[index] = value;
     }
@@ -354,55 +322,47 @@ export class ResourceTracker {
   }
 
   /**
-   * Modifie une valeur unique stockée (pour canStoreValue)
+   * Modifie une valeur unique stockee (pour canStoreValue)
    */
   async setSingleValue(actor, resourceKey, value) {
-    const flagInfo = this._getSingleValueFlagInfo(resourceKey);
+    const condition = this._getCondition(actor, resourceKey);
+    const flagInfo = this._getSingleValueFlagInfo(resourceKey, condition);
     await actor.setFlag(flagInfo.module, flagInfo.key, value);
+  }
+
+  // ============================================================
+  // Flag info (stockage)
+  // ============================================================
+
+  /**
+   * Retourne les infos de flag pour un dice pool
+   */
+  _resolveModule(moduleName) {
+    return moduleName === 'system' ? SYSTEM_MODULE_ID : moduleName;
+  }
+
+  _getFlagInfo(resourceKey, condition = {}) {
+    if (condition.storageModule && condition.storageKey) {
+      return { module: this._resolveModule(condition.storageModule), key: condition.storageKey };
+    }
+    return { module: MODULE_ID, key: `${resourceKey}Dice` };
   }
 
   /**
    * Retourne les infos de flag pour une valeur unique
    */
-  _getSingleValueFlagInfo(resourceKey) {
-    const flagMap = {
-      judgmentDice: { module: 'nimble', key: 'judgmentValue' }
-    };
-    return flagMap[resourceKey] || { module: MODULE_ID, key: `${resourceKey}Value` };
-  }
-
-  /**
-   * Retourne les infos de flag pour une ressource
-   */
-  _getFlagInfo(resourceKey) {
-    const flagMap = {
-      fury: { module: 'nimble', key: 'furyDice' },
-      judgmentDice: { module: 'nimble', key: 'judgmentDice' },
-      combatDice: { module: 'nimble', key: 'combatDice' }
-    };
-    return flagMap[resourceKey] || { module: MODULE_ID, key: `${resourceKey}Dice` };
-  }
-
-  /**
-   * Retourne le max de dés pour un pool
-   */
-  _getDicePoolMax(resourceKey, stats, level) {
-    switch (resourceKey) {
-      case 'fury':
-        return stats.str;
-      case 'combatDice':
-        return stats.str;
-      case 'judgmentDice':
-        return level >= 14 ? 3 : 2;
-      default:
-        return 10;
+  _getSingleValueFlagInfo(resourceKey, condition = {}) {
+    if (condition.storageModule && condition.singleValueKey) {
+      return { module: this._resolveModule(condition.storageModule), key: condition.singleValueKey };
     }
+    return { module: MODULE_ID, key: `${resourceKey}Value` };
   }
 
-  // --- Methodes privees ---
+  // ============================================================
+  // Methodes utilitaires
+  // ============================================================
 
   _getStats(actor) {
-    // Nimble utilise getRollData() pour les valeurs @intelligence, @strength, etc.
     const rollData = actor.getRollData?.() || {};
     const system = actor.system || {};
     const abilities = system.abilities || {};
@@ -416,7 +376,6 @@ export class ResourceTracker {
   }
 
   _getManaValue(actor) {
-    // Lire le mana depuis le systeme Nimble
     const mana = actor.system?.resources?.mana;
     if (mana) {
       return mana.value ?? mana.current ?? 0;
@@ -425,28 +384,8 @@ export class ResourceTracker {
   }
 
   _getManaMax(actor) {
-    // Lire le max mana depuis le systeme Nimble
     const mana = actor.system?.resources?.mana;
     return mana?.max ?? 0;
-  }
-
-  _getMaxManaFromActor(actor) {
-    const classId = this._getActorClass(actor);
-    const stats = this._getStats(actor);
-    const level = this._getActorLevel(actor);
-
-    switch (classId) {
-      case 'mage':
-      case 'songweaver':
-        return this._calculateMana(stats.int, 3, level);
-      case 'oathsworn':
-        return this._calculateMana(stats.wil, 1, level);
-      case 'stormshifter':
-      case 'shepherd':
-        return this._calculateMana(stats.wil, 3, level);
-      default:
-        return 0;
-    }
   }
 
   _getActorClass(actor) {
@@ -460,15 +399,10 @@ export class ResourceTracker {
   }
 
   _getActorLevel(actor) {
-    // Nimble utilise @level dans les formules (via getRollData)
     const rollData = actor.getRollData?.() || {};
     if (rollData.level) return rollData.level;
-
-    // Fallbacks
     if (actor.system?.details?.level) return actor.system.details.level;
     if (actor.system?.level) return actor.system.level;
-
-    // Calculer depuis les items de classe
     const classItems = actor.items.filter(i => i.type === 'class');
     if (classItems.length > 0) {
       return classItems.reduce((sum, c) => sum + (c.system?.levels || c.system?.level || 1), 0);
@@ -476,96 +410,39 @@ export class ResourceTracker {
     return 1;
   }
 
-  _calculateMana(statMod, multiplier, level) {
-    return (statMod * multiplier) + level;
+  _hasActiveEffect(actor, effectName) {
+    if (!actor.effects) return false;
+    return actor.effects.some(e =>
+      (e.name || e.label || '').toLowerCase().includes(effectName) && !e.disabled
+    );
   }
 
-  _getFuryDice(actor, stats) {
-    const furyDice = actor.getFlag('nimble', 'furyDice') || [];
-
-    return {
-      count: furyDice.length,
-      max: stats.str,
-      dieSize: 'd4', // Valeur par défaut, sera écrasée par dieProgression
-      values: furyDice,
-      color: '#DC143C'
-    };
-  }
-
-  _getJudgmentDice(actor) {
-    const current = actor.getFlag('nimble', 'judgmentDice') || [];
-    const storedValue = actor.getFlag('nimble', 'judgmentValue') ?? 0;
-
-    return {
-      count: current.length,
-      max: 2, // Valeur par défaut, sera écrasée par maxProgression
-      dieSize: 'd6', // Valeur par défaut, sera écrasée par dieProgression
-      values: current,
-      storedValue,
-      color: '#FFD700'
-    };
-  }
-
-  _getLayOnHands(actor, level) {
-    const max = level * 5;
-    const current = actor.getFlag(MODULE_ID, 'layOnHands') ?? max;
-    return {
-      value: current,
-      max,
-      color: '#FFD700'
-    };
-  }
-
-  _getCombatDice(actor, stats) {
-    const current = actor.getFlag('nimble', 'combatDice') || [];
-
-    return {
-      count: current.length,
-      max: stats.str,
-      dieSize: 'd6', // Valeur par défaut, sera écrasée par dieProgression
-      values: current,
-      color: '#795548'
-    };
-  }
-
-  _getCoordinatedStrike(actor, level) {
-    let max = 1;
-    if (level >= 17) max = 4;
-    else if (level >= 13) max = 3;
-    else if (level >= 9) max = 2;
-
-    return {
-      value: actor.getFlag(MODULE_ID, 'coordinatedStrike') ?? max,
-      max,
-      color: '#607D8B'
-    };
-  }
-
-  _getThrillCharges(actor) {
-    return {
-      value: actor.getFlag(MODULE_ID, 'thrillOfHunt') || 0,
-      max: null, // Pas de max fixe
-      color: '#4CAF50'
-    };
-  }
+  // ============================================================
+  // Getters speciaux (type: 'special' dans les configs)
+  // ============================================================
 
   _getHuntersMark(actor) {
     const markTarget = actor.getFlag('nimble', 'huntersMarkTarget');
     if (!markTarget) return null;
-
     const target = game.actors.get(markTarget) ||
                    canvas.tokens?.get(markTarget)?.actor;
     return target?.name || 'Unknown Target';
   }
 
-  _getBeastshiftCharges(actor, level, stats) {
-    let bonus = 0;
-    if (level >= 6) bonus = 1; // Expert Shifter
-
+  _getSneakAttack(actor, level) {
     return {
-      value: actor.getFlag(MODULE_ID, 'beastshift') ?? (stats.dex + bonus),
-      max: stats.dex + bonus,
-      color: '#8BC34A'
+      available: !actor.getFlag('nimble', 'sneakAttackUsed'),
+      dieSize: this._getSneakAttackDie(level)
+    };
+  }
+
+  _getCheatUses(actor, level) {
+    return {
+      moveOrHide: !actor.getFlag('nimble', 'cheatMoveUsed'),
+      daily: {
+        value: actor.getFlag(MODULE_ID, 'cheatDaily') ?? 1,
+        max: 1
+      }
     };
   }
 
@@ -579,20 +456,15 @@ export class ResourceTracker {
     return '1d6';
   }
 
-  _hasActiveEffect(actor, effectName) {
-    if (!actor.effects) return false;
-    return actor.effects.some(e =>
-      (e.name || e.label || '').toLowerCase().includes(effectName) && !e.disabled
-    );
-  }
+  // ============================================================
+  // Reset des ressources
+  // ============================================================
 
   /**
    * Reinitialise les ressources pour un acteur selon le type de rest
-   * resetOn: 'rest' = n'importe quel rest, 'safeRest' / 'fieldRest' / 'combatEnd' = specifique
    */
   async resetRestResources(actor, restType) {
     const classId = this._getActorClass(actor);
-    const { CLASS_CONFIGS } = await import('./class-configs/index.js');
     const config = CLASS_CONFIGS[classId];
     if (!config?.resourceConditions) return;
 
@@ -600,48 +472,44 @@ export class ResourceTracker {
 
     for (const [key, condition] of Object.entries(config.resourceConditions)) {
       if (!condition.resetOn) continue;
-      // 'rest' correspond a n'importe quel type, sinon doit correspondre exactement
       if (condition.resetOn !== 'rest' && condition.resetOn !== restType) continue;
       if (condition.requiresFeature && !this._hasFeature(actor, condition.requiresFeature)) continue;
 
       // Dice pools : vider le pool
       if (condition.canStoreDice) {
-        const flagInfo = this._getFlagInfo(key);
+        const flagInfo = this._getFlagInfo(key, condition);
         await actor.setFlag(flagInfo.module, flagInfo.key, []);
         continue;
       }
 
-      // Single value (canStoreValue) : remettre a zero
+      // Single value (canStoreValue) : vider le pool et remettre la valeur a zero
       if (condition.canStoreValue) {
-        const flagInfo = this._getSingleValueFlagInfo(key);
-        await actor.setFlag(flagInfo.module, flagInfo.key, 0);
+        const flagInfo = this._getFlagInfo(key, condition);
+        await actor.setFlag(flagInfo.module, flagInfo.key, []);
+        const singleFlagInfo = this._getSingleValueFlagInfo(key, condition);
+        await actor.setFlag(singleFlagInfo.module, singleFlagInfo.key, 0);
         continue;
       }
 
       // Ressources avec valeur : remettre au max
-      const resourceConfig = this._getResourceConfig(actor, key);
-      if (resourceConfig?.max) {
-        await actor.setFlag(MODULE_ID, key, resourceConfig.max);
+      const stats = this._getStats(actor);
+      const max = this._computeMax(condition, stats, level);
+      if (max) {
+        await actor.setFlag(MODULE_ID, key, max);
       }
     }
   }
 
+  /**
+   * Retourne la config max d'une ressource (pour adjustResource)
+   */
   _getResourceConfig(actor, resourcePath) {
-    // Retourne la config de ressource si disponible
-    const classId = this._getActorClass(actor);
+    const condition = this._getCondition(actor, resourcePath);
+    if (!condition || Object.keys(condition).length === 0) return null;
+
     const stats = this._getStats(actor);
     const level = this._getActorLevel(actor);
-
-    const configs = {
-      burstOfSpeed: { max: stats.dex },
-      inspiration: { max: stats.wil * 2 },
-      pilferedPower: { max: stats.dex },
-      shadowMinions: { max: Math.max(stats.int, level) },
-      searingLight: { max: stats.wil },
-      beastshift: { max: stats.dex + (level >= 6 ? 1 : 0) },
-      layOnHands: { max: level * 5 }
-    };
-
-    return configs[resourcePath] || null;
+    const max = this._computeMax(condition, stats, level);
+    return max !== null ? { max } : null;
   }
 }
