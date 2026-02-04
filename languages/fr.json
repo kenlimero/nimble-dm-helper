@@ -7,7 +7,8 @@
     "noCharacters": "Aucun personnage joueur trouve",
     "abilities": "Capacites",
     "deleteAbility": "Supprimer la capacite",
-    "clearDice": "Vider tous les des",
+    "rollDice": "Lancer un dé",
+    "clearDice": "Vider tous les dés",
     "deleteAbilityConfirm": "Supprimer la capacite <strong>{name}</strong> ? Cette action est irreversible.",
 
     "resources": {
@@ -87,6 +88,10 @@
       "showAbilitiesHint": "Affiche la section des capacites de classe sur les cartes",
       "showDeleteAbility": "Bouton supprimer capacite",
       "showDeleteAbilityHint": "Affiche un bouton de suppression sur les capacites pour les retirer du personnage",
+      "showRollButton": "Bouton lancer de dé",
+      "showRollButtonHint": "Affiche un bouton pour lancer et ajouter un dé dans les pools de dés",
+      "showClearButton": "Bouton vider les dés",
+      "showClearButtonHint": "Affiche un bouton pour vider tous les dés d'un pool",
       "showDicePoolMax": "Afficher le max des pools de des",
       "showDicePoolMaxHint": "Affiche le nombre maximum de des a cote des habiletes de type pool de des",
       "mergedBars": "Barres fusionnees",

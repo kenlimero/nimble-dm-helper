@@ -115,14 +115,14 @@
         </span>
       </div>
       <div class="dice-display" data-color="{{color}}">
-        {{!-- Les slots de dés sont générés en JavaScript --}}
+        {{!-- Les slots de dés et boutons sont générés en JavaScript --}}
       </div>
     </div>
     {{/each}}
 
     {{!-- Single Value Resources (canStoreValue) --}}
     {{#each valueResources}}
-    <div class="value-resource {{key}}-value" data-resource="{{key}}" data-die-size="{{dieSize}}" style="border-left: 3px solid {{color}};">
+    <div class="value-resource {{key}}-value" data-resource="{{key}}" data-die-size="{{dieSize}}" data-max="{{max}}" style="border-left: 3px solid {{color}};">
       <div class="value-header">
         <span class="resource-label">{{localize label}}</span>
         <span class="value-info">
@@ -137,14 +137,19 @@
           <button class="die-delete" type="button" data-action="clearSingleValue" data-resource="{{key}}" title="{{localize 'NIMBLE_DM_HELPER.clearDice'}}"><i class="fas fa-times"></i></button>
           {{/if}}
         </span>
+        {{#if (or @root.settings.showRollButton @root.settings.showClearButton)}}
+        <div class="dice-controls">
+          {{#if @root.settings.showRollButton}}
+          <button class="dice-btn roll-dice" data-action="rollSingleValue" type="button" title="{{localize 'NIMBLE_DM_HELPER.rollDice'}}"><i class="fas fa-dice"></i></button>
+          {{/if}}
+          {{#if @root.settings.showClearButton}}
+          <button class="dice-btn clear-dice" data-action="clearSingleValue" data-resource="{{key}}" type="button" title="{{localize 'NIMBLE_DM_HELPER.clearDice'}}"><i class="fas fa-trash"></i></button>
+          {{/if}}
+        </div>
+        {{/if}}
       </div>
     </div>
     {{/each}}
-
-    <!-- Rage Active Status (Berserker) NOT USED -->
-    {{#if resources.rageActive}}
-      <span class="status-badge rage">RAGE</span>
-    {{/if}}
 
     {{!-- Bar Resources (generic loop - ex: Lay on Hands) --}}
     {{#each barResources}}
@@ -179,40 +184,6 @@
       </div>
     </div>
     {{/each}}
-
-    <!-- Hunter's Mark (Hunter) -->
-    {{#if resources.huntersMark}}
-    <div class="mark-indicator">
-      <i class="fas fa-crosshairs"></i> {{resources.huntersMark}}
-    </div>
-    {{/if}}
-
-    <!-- Sneak Attack (The Cheat) NOT USED -->
-    {{#if resources.sneakAttack}}
-    <div class="resource-inline sneak-attack">
-      <span class="resource-label">{{localize "NIMBLE_DM_HELPER.resources.sneakAttack"}}</span>
-      <span class="die-size">{{resources.sneakAttack.dieSize}}</span>
-      {{#if resources.sneakAttack.available}}
-        <span class="status-badge available">READY</span>
-      {{else}}
-        <span class="status-badge used">USED</span>
-      {{/if}}
-    </div>
-    {{/if}}
-
-    <!-- Cheat Uses (The Cheat) NOT USED -->
-    {{#if resources.cheatUses}}
-    <div class="resource-inline cheat-uses">
-      <span class="resource-label">{{localize "NIMBLE_DM_HELPER.resources.cheatUses"}}</span>
-      {{#if resources.cheatUses.moveOrHide}}
-        <span class="status-badge available">Move/Hide</span>
-      {{else}}
-        <span class="status-badge used">Move/Hide</span>
-      {{/if}}
-      <span class="resource-value">Daily: {{resources.cheatUses.daily.value}}/{{resources.cheatUses.daily.max}}</span>
-    </div>
-    {{/if}}
-  </div>
 
   <!-- Abilities Section -->
   {{#if @root.settings.showAbilities}}

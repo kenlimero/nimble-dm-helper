@@ -95,6 +95,11 @@ function registerHandlebarsHelpers() {
     return a > b;
   });
 
+  Handlebars.registerHelper('or', function(...args) {
+    args.pop(); // remove Handlebars options object
+    return args.some(Boolean);
+  });
+
   // Helper pour calculer le pourcentage
   Handlebars.registerHelper('percent', function(value, max) {
     if (!max || max === 0) return 0;

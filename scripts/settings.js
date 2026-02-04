@@ -75,6 +75,28 @@ export function registerSettings() {
     onChange: () => game.nimbleDMHelper?.app?.render()
   });
 
+  // Afficher le bouton roll dans les dice pools (vu joueur, masque GM uniquement)
+  game.settings.register(MODULE_ID, 'showRollButton', {
+    name: 'NIMBLE_DM_HELPER.settings.showRollButton',
+    hint: 'NIMBLE_DM_HELPER.settings.showRollButtonHint',
+    scope: 'client',
+    config: isGM,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
+  // Afficher le bouton clear dans les dice pools (GM uniquement)
+  game.settings.register(MODULE_ID, 'showClearButton', {
+    name: 'NIMBLE_DM_HELPER.settings.showClearButton',
+    hint: 'NIMBLE_DM_HELPER.settings.showClearButtonHint',
+    scope: 'client',
+    config: isGM,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
   // Afficher le max des dice pools
   game.settings.register(MODULE_ID, 'showDicePoolMax', {
     name: 'NIMBLE_DM_HELPER.settings.showDicePoolMax',

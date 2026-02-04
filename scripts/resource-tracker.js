@@ -1,5 +1,6 @@
 import { MODULE_ID, SYSTEM_MODULE_ID } from './constants.js';
 import { CLASS_CONFIGS } from './class-configs/index.js';
+import { getActorClass, getActorLevel, getStats, hasFeature } from './actor-utils.js';
 
 /**
  * Gestionnaire des ressources specifiques aux classes Nimble
@@ -17,11 +18,11 @@ export class ResourceTracker {
   async getClassResources(actor, classId, config, level) {
     const resources = {};
     const conditions = config.resourceConditions || {};
-    const stats = this._getStats(actor);
+    const stats = getStats(actor);
 
     for (const [key, condition] of Object.entries(conditions)) {
       // Verifier requiresFeature si defini
-      if (condition.requiresFeature && !this._hasFeature(actor, condition.requiresFeature)) {
+      if (condition.requiresFeature && !hasFeature(actor, condition.requiresFeature)) {
         continue;
       }
 
@@ -169,22 +170,10 @@ export class ResourceTracker {
   }
 
   /**
-   * Verifie si l'acteur possede une feature avec le nom specifie
-   */
-  _hasFeature(actor, featureName) {
-    if (!actor.items) return false;
-    const normalizedName = featureName.toLowerCase().trim();
-    return actor.items.some(item =>
-      item.type === 'feature' &&
-      item.name?.toLowerCase().trim() === normalizedName
-    );
-  }
-
-  /**
    * Recupere la condition d'une ressource depuis les configs de classe
    */
   _getCondition(actor, resourceKey) {
-    const classId = this._getActorClass(actor);
+    const classId = getActorClass(actor);
     const config = CLASS_CONFIGS[classId];
     return config?.resourceConditions?.[resourceKey] || {};
   }
@@ -264,8 +253,8 @@ export class ResourceTracker {
     const flagInfo = this._getFlagInfo(resourceKey, condition);
     let currentDice = actor.getFlag(flagInfo.module, flagInfo.key) || [];
 
-    const stats = this._getStats(actor);
-    const level = this._getActorLevel(actor);
+    const stats = getStats(actor);
+    const level = getActorLevel(actor);
     const maxDice = this._computeMax(condition, stats, level) || 10;
 
     while (currentDice.length < maxDice) {
@@ -305,8 +294,8 @@ export class ResourceTracker {
   async setDieValue(actor, resourceKey, index, value) {
     const condition = this._getCondition(actor, resourceKey);
     const flagInfo = this._getFlagInfo(resourceKey, condition);
-    const stats = this._getStats(actor);
-    const level = this._getActorLevel(actor);
+    const stats = getStats(actor);
+    const level = getActorLevel(actor);
     const maxDice = this._computeMax(condition, stats, level) || 10;
 
     let currentDice = actor.getFlag(flagInfo.module, flagInfo.key) || [];
@@ -319,6 +308,18 @@ export class ResourceTracker {
     }
 
     await actor.setFlag(flagInfo.module, flagInfo.key, currentDice);
+  }
+
+  /**
+   * Lance des des et stocke le total comme valeur unique (canStoreValue)
+   */
+  async rollAndSetSingleValue(actor, resourceKey, dieSize, diceCount = 1) {
+    const roll = await new Roll(`${diceCount}${dieSize}`).evaluate();
+    roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resourceKey}`)} - ${diceCount}${dieSize}`
+    });
+    await this.setSingleValue(actor, resourceKey, roll.total);
   }
 
   /**
@@ -362,19 +363,6 @@ export class ResourceTracker {
   // Methodes utilitaires
   // ============================================================
 
-  _getStats(actor) {
-    const rollData = actor.getRollData?.() || {};
-    const system = actor.system || {};
-    const abilities = system.abilities || {};
-
-    return {
-      str: rollData.strength ?? system.strength ?? abilities.strength?.value ?? abilities.strength?.mod ?? 0,
-      dex: rollData.dexterity ?? system.dexterity ?? abilities.dexterity?.value ?? abilities.dexterity?.mod ?? 0,
-      int: rollData.intelligence ?? system.intelligence ?? abilities.intelligence?.value ?? abilities.intelligence?.mod ?? 0,
-      wil: rollData.will ?? system.will ?? rollData.wisdom ?? system.wisdom ?? abilities.will?.value ?? abilities.will?.mod ?? 0
-    };
-  }
-
   _getManaValue(actor) {
     const mana = actor.system?.resources?.mana;
     if (mana) {
@@ -386,28 +374,6 @@ export class ResourceTracker {
   _getManaMax(actor) {
     const mana = actor.system?.resources?.mana;
     return mana?.max ?? 0;
-  }
-
-  _getActorClass(actor) {
-    const classItem = actor.items.find(i => i.type === 'class');
-    if (classItem) {
-      const id = classItem.system?.identifier || classItem.name || 'unknown';
-      return id.toLowerCase().replace(/\s+/g, '');
-    }
-    const fallback = actor.system?.class?.identifier || 'unknown';
-    return fallback.toLowerCase().replace(/\s+/g, '');
-  }
-
-  _getActorLevel(actor) {
-    const rollData = actor.getRollData?.() || {};
-    if (rollData.level) return rollData.level;
-    if (actor.system?.details?.level) return actor.system.details.level;
-    if (actor.system?.level) return actor.system.level;
-    const classItems = actor.items.filter(i => i.type === 'class');
-    if (classItems.length > 0) {
-      return classItems.reduce((sum, c) => sum + (c.system?.levels || c.system?.level || 1), 0);
-    }
-    return 1;
   }
 
   _hasActiveEffect(actor, effectName) {
@@ -425,16 +391,16 @@ export class ResourceTracker {
    * Reinitialise les ressources pour un acteur selon le type de rest
    */
   async resetRestResources(actor, restType) {
-    const classId = this._getActorClass(actor);
+    const classId = getActorClass(actor);
     const config = CLASS_CONFIGS[classId];
     if (!config?.resourceConditions) return;
 
-    const level = this._getActorLevel(actor);
+    const level = getActorLevel(actor);
 
     for (const [key, condition] of Object.entries(config.resourceConditions)) {
       if (!condition.resetOn) continue;
       if (condition.resetOn !== 'rest' && condition.resetOn !== restType) continue;
-      if (condition.requiresFeature && !this._hasFeature(actor, condition.requiresFeature)) continue;
+      if (condition.requiresFeature && !hasFeature(actor, condition.requiresFeature)) continue;
 
       // Dice pools : vider le pool
       if (condition.canStoreDice) {
@@ -453,7 +419,7 @@ export class ResourceTracker {
       }
 
       // Ressources avec valeur : remettre au max
-      const stats = this._getStats(actor);
+      const stats = getStats(actor);
       const max = this._computeMax(condition, stats, level);
       if (max) {
         await actor.setFlag(MODULE_ID, key, max);
@@ -468,8 +434,8 @@ export class ResourceTracker {
     const condition = this._getCondition(actor, resourcePath);
     if (!condition || Object.keys(condition).length === 0) return null;
 
-    const stats = this._getStats(actor);
-    const level = this._getActorLevel(actor);
+    const stats = getStats(actor);
+    const level = getActorLevel(actor);
     const max = this._computeMax(condition, stats, level);
     return max !== null ? { max } : null;
   }

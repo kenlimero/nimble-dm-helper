@@ -7,6 +7,7 @@
     "noCharacters": "No player characters found",
     "abilities": "Abilities",
     "deleteAbility": "Delete Ability",
+    "rollDice": "Roll a die",
     "clearDice": "Clear all dice",
     "deleteAbilityConfirm": "Delete the ability <strong>{name}</strong>? This cannot be undone.",
 
@@ -86,6 +87,10 @@
       "showAbilitiesHint": "Display class abilities section on character cards",
       "showDeleteAbility": "Show Delete Ability Button",
       "showDeleteAbilityHint": "Display a delete button on abilities to remove them from the character",
+      "showRollButton": "Show Roll Button",
+      "showRollButtonHint": "Display a roll button on dice pools to roll and add a die",
+      "showClearButton": "Show Clear Button",
+      "showClearButtonHint": "Display a clear button on dice pools to remove all dice",
       "showDicePoolMax": "Show Dice Pool Max",
       "showDicePoolMaxHint": "Display the maximum number of dice next to dice pool abilities",
       "mergedBars": "Merged Resource Bars",

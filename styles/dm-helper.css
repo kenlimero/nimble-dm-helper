@@ -383,8 +383,8 @@
 .dice-controls {
   display: flex;
   gap: 4px;
-  margin-top: 6px;
-  justify-content: flex-end;
+  align-items: center;
+  margin-left: auto;
 }
 
 .dice-btn {
@@ -658,6 +658,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+}
+
+.value-display .dice-controls {
+  position: absolute;
+  right: 0;
 }
 
 .single-value {
