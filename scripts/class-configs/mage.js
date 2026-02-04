@@ -5,8 +5,28 @@ export const mageConfig = {
     mana: {
       requiresFeature: 'Mana and Unlock Tier 1 Spells',
       type: 'mana',
-      color: '#2196F3',
       formula: 'INT × 3 + LVL'
+    },
+    nullify: {
+      requiresFeature: 'Nullify',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 7, max: 1 }]
+    },
+    steelWill: {
+      requiresFeature: 'Steel Will',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      defaultToMax: true,
+      maxProgression: [{ level: 11, max: 1 }]
+    },  
+    chaosLash: {
+      requiresFeature: 'Chaos Lash',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 7, max: 1 }]
     }
   }
 };

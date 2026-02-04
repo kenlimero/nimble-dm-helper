@@ -418,45 +418,6 @@ export class ResourceTracker {
   }
 
   // ============================================================
-  // Getters speciaux (type: 'special' dans les configs)
-  // ============================================================
-
-  _getHuntersMark(actor) {
-    const markTarget = actor.getFlag('nimble', 'huntersMarkTarget');
-    if (!markTarget) return null;
-    const target = game.actors.get(markTarget) ||
-                   canvas.tokens?.get(markTarget)?.actor;
-    return target?.name || 'Unknown Target';
-  }
-
-  _getSneakAttack(actor, level) {
-    return {
-      available: !actor.getFlag('nimble', 'sneakAttackUsed'),
-      dieSize: this._getSneakAttackDie(level)
-    };
-  }
-
-  _getCheatUses(actor, level) {
-    return {
-      moveOrHide: !actor.getFlag('nimble', 'cheatMoveUsed'),
-      daily: {
-        value: actor.getFlag(MODULE_ID, 'cheatDaily') ?? 1,
-        max: 1
-      }
-    };
-  }
-
-  _getSneakAttackDie(level) {
-    if (level >= 17) return '3d20';
-    if (level >= 15) return '2d20';
-    if (level >= 11) return '2d12';
-    if (level >= 9) return '2d10';
-    if (level >= 7) return '2d8';
-    if (level >= 3) return '1d8';
-    return '1d6';
-  }
-
-  // ============================================================
   // Reset des ressources
   // ============================================================
 

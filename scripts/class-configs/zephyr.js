@@ -5,9 +5,23 @@ export const zephyrConfig = {
     burstOfSpeed: {
       requiresFeature: 'Burst of Speed',
       displayType: 'inline',
-      color: '#00BCD4',
       maxStat: 'dex',
+      resetOn: 'combatEnd',
       defaultToMax: true
+    },
+    etherealProjection: {
+      requiresFeature: 'Ethereal Projection',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 2, max: 1 }]
+    },
+    blur: {
+      requiresFeature: 'Blur',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 2, max: 1 }]
     }
   }
 };

@@ -35,6 +35,27 @@ export const oathswornConfig = {
       maxLevelMultiplier: 5,
       defaultToMax: true,
       resetOn: 'safeRest'
+    },
+    blindingAura: {
+      requiresFeature: 'Blinding Aura',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      maxProgression: [{ level: 3, max: 1 }],
+      defaultToMax: true
+    },
+    courage: {
+      requiresFeature: 'Courage!',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 3, max: 1 }],
+      defaultToMax: true
+    },
+    explosiveJudgment: {
+      requiresFeature: 'Explosive Judgment',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 3, max: 1 }],
+      defaultToMax: true
     }
   }
 };

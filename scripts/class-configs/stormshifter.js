@@ -5,16 +5,59 @@ export const stormshifterConfig = {
     mana: {
       requiresFeature: 'Mana and Unlock Tier 1 Spells',
       type: 'mana',
-      color: '#9C27B0',
       formula: 'WIL × 3 + LVL'
     },
     beastshift: {
       requiresFeature: 'Beastshift',
       displayType: 'inline',
-      color: '#8BC34A',
       maxStat: 'dex',
-      maxLevelBonus: [{ level: 6, bonus: 1 }],
+      maxLevelBonus: [
+        { level: 6, bonus: 1 },
+        { level: 12, bonus: 1 }
+      ],
+      defaultToMax: true
+    },
+    stormborn: {
+      requiresFeature: 'Stormborn (1)',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      maxProgression: [{ level: 8, max: 1 }],
+      defaultToMax: true
+    },
+    attunedToNature: {
+      requiresFeature: 'Attuned to Nature',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      maxProgression: [{ level: 3, max: 1 }],
+      defaultToMax: true
+    },
+    masterOfStorm: {
+      requiresFeature: 'Master of Storm',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      maxProgression: [{ level: 15, max: 1 }],
+      defaultToMax: true
+    },
+    unleashTheBeast: {
+      requiresFeature: 'Unleash the Beast',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 7, max: 1 }],
+      defaultToMax: true
+    },
+    stormWake: {
+      requiresFeature: 'Storm Wake',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 7, max: 1 }],
+      defaultToMax: true
+    },
+    venomousGaze: {
+      requiresFeature: 'Venomous Gaze',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 12, max: 1 }],
       defaultToMax: true
     }
-  }
+   }
 };

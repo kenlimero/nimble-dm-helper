@@ -18,9 +18,12 @@ export const berserkerConfig = {
         { level: 17, dieSize: 'd12' }
       ]
     },
-    rageActive: {
-      type: 'statusEffect',
-      effectName: 'rage'
+    oneWithTheAncients: {
+      requiresFeature: 'One with the Ancients',
+      resetOn: 'safeRest',
+      displayType: 'inline',
+      defaultToMax: true,
+      maxProgression: [{ level: 2, max: 1 }]
     }
   }
 };

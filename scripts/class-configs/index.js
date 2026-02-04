@@ -12,15 +12,14 @@ import { cheatConfig } from './cheat.js';
 
 export const CLASS_CONFIGS = {
   berserker: berserkerConfig,
-  mage: mageConfig,
-  oathsworn: oathswornConfig,
   commander: commanderConfig,
   hunter: hunterConfig,
-  zephyr: zephyrConfig,
-  stormshifter: stormshifterConfig,
-  songweaver: songweaverConfig,
+  mage: mageConfig,
+  oathsworn: oathswornConfig,
   shadowmancer: shadowmancerConfig,
   shepherd: shepherdConfig,
-  cheat: cheatConfig,
-  thecheat: cheatConfig // Alias
+  songweaver: songweaverConfig,
+  stormshifter: stormshifterConfig,
+  "the-cheat": cheatConfig,
+  zephyr: zephyrConfig
 };

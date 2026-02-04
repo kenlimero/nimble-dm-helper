@@ -7,6 +7,14 @@ export const commanderConfig = {
       canStoreDice: true,
       color: '#795548',
       maxStat: 'str',
+      maxLevelBonus: [
+        { level: 6, bonus: 1 },
+        { level: 8, bonus: 1 },
+        { level: 10, bonus: 1 },
+        { level: 12, bonus: 1 },
+        { level: 16, bonus: 1 }
+      ],
+      resetOn: 'combatEnd',
       storageModule: 'system',
       storageKey: 'combatDice',
       dieProgression: [
@@ -20,14 +28,28 @@ export const commanderConfig = {
     coordinatedStrike: {
       requiresFeature: 'Coordinated Strike!',
       displayType: 'inline',
-      color: '#607D8B',
-      maxProgression: [
-        { level: 1, max: 1 },
-        { level: 9, max: 2 },
-        { level: 13, max: 3 },
-        { level: 17, max: 4 }
+      resetOn: 'safeRest',
+      maxStat: 'int',
+      maxLevelBonus: [
+        { level: 9, bonus: 1 },
+        { level: 13, bonus: 1 },
+        { level: 17, bonus: 1 }
       ],
       defaultToMax: true
+    },
+    holdTheLine: {
+      requiresFeature: 'Hold the Line!',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 2, max: 1 }]
+    },
+    iCanDoThisAllDay: {
+      requiresFeature: 'I Can Do This ALL DAY!',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 2, max: 1 }]
     }
   }
 };

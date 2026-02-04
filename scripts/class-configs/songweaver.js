@@ -5,15 +5,49 @@ export const songweaverConfig = {
     mana: {
       requiresFeature: 'Mana and Unlock Tier 1 Spells',
       type: 'mana',
-      color: '#E91E63',
       formula: 'INT × 3 + LVL'
     },
     inspiration: {
       requiresFeature: "Songweaver's Inspiration",
       displayType: 'inline',
-      color: '#FF9800',
       maxStat: 'wil',
       maxMultiplier: 2,
+      resetOn: 'safeRest',
+      defaultToMax: true
+    },
+    songOfRest: {
+      requiresFeature: "Song of Rest",
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      maxProgression: [{ level: 2, max: 1 }],
+      defaultToMax: true
+    },
+    inspiringAnthem: {
+      requiresFeature: "Inspiring Anthem",
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 4, max: 1 }],
+      defaultToMax: true
+    },
+    notMyFaaace: {
+      requiresFeature: "Not My Beautiful Faaace!",
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 4, max: 1 }],
+      defaultToMax: true
+    },
+    chordOfChaos: {
+      requiresFeature: "Chord of Chaos",
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 11, max: 1 }],
+      defaultToMax: true
+    },
+    chorusOfChampions: {
+      requiresFeature: "Chorus of Champions",
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      maxProgression: [{ level: 15, max: 1 }],
       defaultToMax: true
     }
   }

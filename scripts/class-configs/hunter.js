@@ -2,17 +2,33 @@ export const hunterConfig = {
   name: 'Hunter',
   icon: 'icons/weapons/bows/bow-recurve-yellow.webp',
   resourceConditions: {
-    thrillOfHunt: {
-      requiresFeature: 'Thrill of the Hunt',
+    greaseTrap: {
+      requiresFeature: 'Grease Trap',
       displayType: 'inline',
-      color: '#4CAF50',
-      noMax: true,
-      defaultValue: 0
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 2, max: 1 }]
     },
-    huntersMark: {
-      requiresFeature: "Hunter's Mark",
-      type: 'special',
-      getter: '_getHuntersMark'
+    snareTrap: {
+      requiresFeature: 'Snare Trap',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 2, max: 1 }]
+    },
+    primalPredator: {
+      requiresFeature: 'Primal Predator',
+      displayType: 'inline',
+      resetOn: 'combatEnd',
+      defaultToMax: true,
+      maxProgression: [{ level: 3, max: 1 }]
+  },
+    haIAmOverThere: {
+      requiresFeature: "Ha! I'm Over Here!",
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      defaultToMax: true,
+      maxProgression: [{ level: 3, max: 1 }]
     }
   }
 };

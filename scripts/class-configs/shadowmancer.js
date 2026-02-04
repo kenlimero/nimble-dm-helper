@@ -5,17 +5,34 @@ export const shadowmancerConfig = {
     pilferedPower: {
       requiresFeature: 'Pilfered Power',
       displayType: 'inline',
-      color: '#673AB7',
       maxStat: 'dex',
+      resetOn: 'safeRest',
       defaultToMax: true
     },
     shadowMinions: {
-      requiresFeature: 'Summon Shadows',
       displayType: 'inline',
-      color: '#424242',
-      maxStat: 'int',
-      maxMinLevel: true,
       defaultValue: 0
+    },
+    bloodSight: {
+      requiresFeature: 'Blood Sight',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      defaultToMax: true,
+      maxProgression: [{ level: 4, max: 1 }]
+    },  
+    whispersOfTheGrave: {
+      requiresFeature: 'Whispers of the Grave',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      defaultToMax: true,
+      maxProgression: [{ level: 4, max: 1 }]
+    },  
+    glacialResilience: {
+      requiresFeature: 'Glacial Resilience',
+      displayType: 'inline',
+      resetOn: 'safeRest',
+      defaultToMax: true,
+      maxProgression: [{ level: 11, max: 1 }]
     }
   }
 };
