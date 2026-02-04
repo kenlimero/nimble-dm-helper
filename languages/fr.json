@@ -18,6 +18,7 @@
       "fury": "Dés de Fureur",
       "furyDice": "Dés de Fureur",
       "oneWithTheAncients": "Un avec les Anciens",
+      "sneakAttack": "Attaque Sournoise",
       "cheat": "Triche!",
       "quickReadEnc": "Lecture Rapide de l'Ennemi",
       "quickReadDay": "Lecture Rapide du Monde",
@@ -76,6 +77,8 @@
     },
 
     "settings": {
+      "playerAccess": "Acces joueurs",
+      "playerAccessHint": "Permet aux joueurs d'utiliser la fenetre d'aide. Les joueurs ne voient que leur propre personnage, le MJ voit tous les personnages.",
       "showToolbarButton": "Afficher le bouton",
       "showToolbarButtonHint": "Affiche un bouton dans les controles de token pour ouvrir l'Assistant",
       "compactMode": "Mode compact",

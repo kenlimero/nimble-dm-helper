@@ -18,6 +18,7 @@
       "fury": "Fury Dice",
       "furyDice": "Fury Dice",
       "oneWithTheAncients": "One with the Ancients",
+      "sneakAttack": "Sneak Attack",
       "cheat": "Cheat!",
       "quickReadEnc": "Quick Read Ennemi",
       "quickReadDay": "Quick Read Exam.",
@@ -75,6 +76,8 @@
     },
 
     "settings": {
+      "playerAccess": "Player Access",
+      "playerAccessHint": "Allow players to use the helper window. Players will only see their own character, while the GM sees all characters.",
       "showToolbarButton": "Show Toolbar Button",
       "showToolbarButtonHint": "Display a button in the token controls to open DM Helper",
       "compactMode": "Compact Mode",

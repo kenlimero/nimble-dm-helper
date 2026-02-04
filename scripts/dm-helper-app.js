@@ -60,10 +60,15 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const data = {};
 
     const filterByPresence = game.settings.get(MODULE_ID, 'filterByPresence');
+    const isGM = game.user.isGM;
 
     let playerCharacters;
-    if (filterByPresence) {
-      // Filtrer uniquement les personnages principaux des joueurs connectés
+
+    if (!isGM) {
+      // Joueur : uniquement son propre personnage
+      playerCharacters = game.user.character ? [game.user.character] : [];
+    } else if (filterByPresence) {
+      // GM + filtre par presence : personnages principaux des joueurs connectés
       playerCharacters = game.users
         .filter(user =>
           user.active &&                         // Joueur connecté
@@ -76,7 +81,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
           !actor.getFlag(MODULE_ID, 'excluded')  // Pas exclu manuellement
         );
     } else {
-      // Afficher tous les personnages joueurs
+      // GM sans filtre : tous les personnages joueurs
       playerCharacters = game.actors.filter(actor =>
         actor.type === 'character' &&
         actor.hasPlayerOwner &&

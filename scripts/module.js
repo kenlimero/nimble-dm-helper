@@ -21,11 +21,11 @@ Hooks.once('init', async () => {
 
 // Bouton dans les scene controls - doit etre enregistre avant 'ready'
 Hooks.on('getSceneControlButtons', (controls) => {
-  if (!game.user?.isGM) return;
+  if (!game.user?.isGM && !game.settings.get(MODULE_ID, 'playerAccess')) return;
 
-  // Verifier si le setting existe et est active
+  // Verifier si le setting existe et est active (force pour les joueurs)
   try {
-    if (!game.settings.get(MODULE_ID, 'showToolbarButton')) return;
+    if (game.user?.isGM && !game.settings.get(MODULE_ID, 'showToolbarButton')) return;
   } catch (e) {
     // Settings pas encore enregistres, afficher par defaut
   }
@@ -105,12 +105,13 @@ function registerHandlebarsHelpers() {
 }
 
 Hooks.once('ready', () => {
-  if (!game.user.isGM) {
-    console.log(`${MODULE_ID} | Not a GM, module disabled`);
+  const playerAccess = game.settings.get(MODULE_ID, 'playerAccess');
+  if (!game.user.isGM && !playerAccess) {
+    console.log(`${MODULE_ID} | Not a GM and player access disabled, module disabled`);
     return;
   }
 
-  console.log(`${MODULE_ID} | Ready`);
+  console.log(`${MODULE_ID} | Ready (${game.user.isGM ? 'GM' : 'Player'})`);
   registerHooks();
 
   // Creer instance globale

@@ -13,10 +13,14 @@ const debouncedRender = debounce(() => {
   game.nimbleDMHelper?.app?.render();
 }, 100);
 
+function hasAccess() {
+  return game.user.isGM || game.settings.get(MODULE_ID, 'playerAccess');
+}
+
 export function registerHooks() {
   // Re-render quand un acteur est mis a jour
   Hooks.on('updateActor', (actor, changes, options, userId) => {
-    if (!game.user.isGM) return;
+    if (!hasAccess()) return;
     if (actor.type !== 'character') return;
     if (!game.nimbleDMHelper?.app?.rendered) return;
     debouncedRender();
@@ -24,27 +28,27 @@ export function registerHooks() {
 
   // Re-render quand un effect est ajoute/supprime
   Hooks.on('createActiveEffect', (effect, options, userId) => {
-    if (!game.user.isGM) return;
+    if (!hasAccess()) return;
     if (!game.nimbleDMHelper?.app?.rendered) return;
     debouncedRender();
   });
 
   Hooks.on('deleteActiveEffect', (effect, options, userId) => {
-    if (!game.user.isGM) return;
+    if (!hasAccess()) return;
     if (!game.nimbleDMHelper?.app?.rendered) return;
     debouncedRender();
   });
 
   // Re-render quand un item est modifie
   Hooks.on('updateItem', (item, changes, options, userId) => {
-    if (!game.user.isGM) return;
+    if (!hasAccess()) return;
     if (!game.nimbleDMHelper?.app?.rendered) return;
     debouncedRender();
   });
 
   // Re-render quand le statut d'un utilisateur change (connexion/déconnexion)
   Hooks.on('updateUser', (user, changes, options, userId) => {
-    if (!game.user.isGM) return;
+    if (!hasAccess()) return;
     if (!game.nimbleDMHelper?.app?.rendered) return;
 
     // Rafraîchir si le statut actif change ou si le personnage principal change
