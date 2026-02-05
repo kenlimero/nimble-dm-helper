@@ -15,49 +15,10 @@
   </header>
 
   <div class="character-resources">
-    <!-- HP Bar -->
-    <div class="resource-bar-container {{#if @root.settings.mergedBars}}merged-bar{{/if}}" data-resource="hp">
-      {{#unless @root.settings.mergedBars}}
-      <div class="resource-header">
-        <span class="resource-label">HP</span>
-        <span class="resource-value" data-resource="hp">{{resources.hp.value}}/{{resources.hp.max}}</span>
-      </div>
-      {{/unless}}
-      <div class="resource-bar-wrapper">
-        <div class="resource-bar hp-bar" style="width: {{percent resources.hp.value resources.hp.max}}%; background-color: {{resources.hp.color}};"></div>
-        {{#if @root.settings.mergedBars}}
-        <div class="merged-bar-overlay">
-          <span class="resource-label">HP</span>
-          <span class="merged-bar-values">
-            {{#if resources.hp.temp}}<span class="merged-temp-hp">+{{resources.hp.temp}}</span>{{/if}}
-            <span class="resource-value" data-resource="hp">{{resources.hp.value}}/{{resources.hp.max}}</span>
-          </span>
-        </div>
-        {{else}}
-        {{#if resources.hp.temp}}
-          <div class="temp-hp-indicator">+{{resources.hp.temp}}</div>
-        {{/if}}
-        {{/if}}
-      </div>
-      <div class="resource-controls">
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="hp" data-delta="-5">-5</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="hp" data-delta="-1">-1</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="hp" data-delta="1">+1</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="hp" data-delta="5">+5</button>
-      </div>
-    </div>
-
-    <!-- Temp HP -->
-    {{#if resources.hp.temp}}
-    <div class="resource-inline temp-hp">
-      <span class="resource-label">Temp HP</span>
-      <span class="resource-value">{{resources.hp.temp}}</span>
-      <div class="resource-controls">
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="tempHp" data-delta="-1">-</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="tempHp" data-delta="1">+</button>
-      </div>
-    </div>
-    {{/if}}
+    {{!-- HP Bars (HP, Temp HP) --}}
+    {{#each hpBars}}
+    {{> "nimble-dm-helper.resource-bar" }}
+    {{/each}}
 
     <!-- Wounds -->
     {{#if showWounds}}
@@ -73,40 +34,16 @@
     </div>
     {{/if}}
 
-    <!-- Mana (if applicable) -->
-    {{#if resources.mana.max}}
-    <div class="resource-bar-container mana-resource {{#if @root.settings.mergedBars}}merged-bar{{/if}}" data-resource="mana">
-      {{#unless @root.settings.mergedBars}}
-      <div class="resource-header">
-        <span class="resource-label">{{localize "NIMBLE_DM_HELPER.resources.mana"}}</span>
-        {{#if resources.mana.formula}}
-          <span class="resource-formula" title="{{resources.mana.formula}}"><i class="fas fa-calculator"></i></span>
-        {{/if}}
-        <span class="resource-value" data-resource="mana">{{resources.mana.value}}/{{resources.mana.max}}</span>
-      </div>
-      {{/unless}}
-      <div class="resource-bar-wrapper">
-        <div class="resource-bar mana-bar" style="width: {{percent resources.mana.value resources.mana.max}}%; background: {{resources.mana.color}};"></div>
-        {{#if @root.settings.mergedBars}}
-        <div class="merged-bar-overlay">
-          <span class="resource-label">{{localize "NIMBLE_DM_HELPER.resources.mana"}}</span>
-          <span class="resource-value" data-resource="mana">{{resources.mana.value}}/{{resources.mana.max}}</span>
-        </div>
-        {{/if}}
-      </div>
-      <div class="resource-controls">
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="mana" data-delta="-1">-1</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="mana" data-delta="1">+1</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="mana" data-delta="5">+5</button>
-      </div>
-    </div>
-    {{/if}}
+    {{!-- Resource Bars (Mana, Lay on Hands, etc.) --}}
+    {{#each resourceBars}}
+    {{> "nimble-dm-helper.resource-bar" }}
+    {{/each}}
 
     <!-- Dice Pools (dynamic based on canStoreDice) -->
     {{#each dicePools}}
     <div class="dice-pool {{key}}-dice" data-resource="{{key}}" data-die-size="{{dieSize}}" data-max="{{max}}" style="border-left: 3px solid {{color}};">
       <div class="dice-header">
-        <span class="resource-label">{{localize label}}</span>
+        <span class="resource-label">{{localize labelKey}}</span>
         <span class="dice-info">
           <span class="die-size-badge" style="background: {{color}};">{{dieSize}}</span>
           {{#if @root.settings.showDicePoolMax}}
@@ -124,7 +61,7 @@
     {{#each valueResources}}
     <div class="value-resource {{key}}-value" data-resource="{{key}}" data-die-size="{{dieSize}}" data-max="{{max}}" style="border-left: 3px solid {{color}};">
       <div class="value-header">
-        <span class="resource-label">{{localize label}}</span>
+        <span class="resource-label">{{localize labelKey}}</span>
         <span class="value-info">
           <span class="die-size-badge" style="background: {{color}};">{{dieSize}}</span>
           <span class="value-max">max: {{max}}</span>
@@ -151,28 +88,11 @@
     </div>
     {{/each}}
 
-    {{!-- Bar Resources (generic loop - ex: Lay on Hands) --}}
-    {{#each barResources}}
-    <div class="resource-bar-container" data-resource="{{key}}">
-      <div class="resource-header">
-        <span class="resource-label">{{localize label}}</span>
-        <span class="resource-value">{{value}}/{{max}}</span>
-      </div>
-      <div class="resource-bar-wrapper">
-        <div class="resource-bar" style="width: {{percent value max}}%; background-color: {{color}};"></div>
-      </div>
-      <div class="resource-controls">
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="{{key}}" data-delta="-5">-5</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="{{key}}" data-delta="-1">-1</button>
-        <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="{{key}}" data-delta="1">+1</button>
-      </div>
-    </div>
-    {{/each}}
 
     {{!-- Inline Resources (generic loop) --}}
     {{#each inlineResources}}
     <div class="resource-inline">
-      <span class="resource-label">{{localize label}}</span>
+      <span class="resource-label">{{localize labelKey}}</span>
       {{#if max}}
       <span class="resource-value">{{value}}/{{max}}</span>
       {{else}}

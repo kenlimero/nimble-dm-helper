@@ -229,6 +229,20 @@
   font-weight: bold;
 }
 
+/* Temp HP Bar */
+.resource-bar-container[data-resource="tempHp"] {
+  border-left: 3px solid var(--ndh-temp-hp);
+  padding-left: 6px;
+}
+
+.resource-bar-container[data-resource="tempHp"] .resource-header .resource-label {
+  color: var(--ndh-temp-hp);
+}
+
+.resource-bar-container[data-resource="tempHp"] .resource-bar-wrapper {
+  height: 10px;
+}
+
 /* Controles */
 .resource-controls {
   display: flex;
@@ -302,6 +316,11 @@
   font-size: 14px;
   color: rgba(255, 255, 255, 0.2);
   transition: color 0.2s;
+  cursor: pointer;
+}
+
+.wound-box:hover {
+  color: var(--ndh-hp-mid);
 }
 
 .wound-box.filled {

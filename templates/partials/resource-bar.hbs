@@ -1,0 +1,37 @@
+{{!-- resource-bar.hbs : Partial unifié pour les barres de ressources (HP, mana, lay on hands, etc.) --}}
+<div class="resource-bar-container {{#if supportsMergedBars}}{{#if @root.settings.mergedBars}}merged-bar{{/if}}{{/if}}" data-resource="{{key}}">
+  {{#unless (and supportsMergedBars @root.settings.mergedBars)}}
+  <div class="resource-header">
+    <span class="resource-label">{{#if labelKey}}{{localize labelKey}}{{else}}{{label}}{{/if}}</span>
+    {{#if formula}}
+      <span class="resource-formula" title="{{formula}}"><i class="fas fa-calculator"></i></span>
+    {{/if}}
+    <span class="resource-value" data-resource="{{key}}">{{#if hideMax}}{{value}}{{else}}{{value}}/{{max}}{{/if}}</span>
+  </div>
+  {{/unless}}
+  <div class="resource-bar-wrapper">
+    <div class="resource-bar" style="width: {{percent value max}}%; background-color: {{color}};"></div>
+    {{#if supportsMergedBars}}
+    {{#if @root.settings.mergedBars}}
+    <div class="merged-bar-overlay">
+      <span class="resource-label">{{#if labelKey}}{{localize labelKey}}{{else}}{{label}}{{/if}}</span>
+      <span class="merged-bar-values">
+        {{#if temp}}<span class="merged-temp-hp">+{{temp}}</span>{{/if}}
+        <span class="resource-value" data-resource="{{key}}">{{#if hideMax}}{{value}}{{else}}{{value}}/{{max}}{{/if}}</span>
+      </span>
+    </div>
+    {{else}}
+    {{#if temp}}
+      <div class="temp-hp-indicator">+{{temp}}</div>
+    {{/if}}
+    {{/if}}
+    {{/if}}
+  </div>
+  {{#if @root.settings.showBarControls}}
+  <div class="resource-controls">
+    {{#each controls}}
+    <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="{{../key}}" data-delta="{{delta}}">{{label}}</button>
+    {{/each}}
+  </div>
+  {{/if}}
+</div>

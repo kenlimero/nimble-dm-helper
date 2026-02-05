@@ -60,7 +60,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       clearSingleValue: NimbleDMHelperApp._onClearSingleValue,
       deleteAbility: NimbleDMHelperApp._onDeleteAbility,
       editDieValue: NimbleDMHelperApp._onEditDieValueAction,
-      deleteDie: NimbleDMHelperApp._onDeleteDieAction
+      deleteDie: NimbleDMHelperApp._onDeleteDieAction,
+      clickWound: NimbleDMHelperApp._onClickWound
     }
   };
 
@@ -122,6 +123,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       showClearButton: game.settings.get(MODULE_ID, 'showClearButton'),
       compactMode: game.settings.get(MODULE_ID, 'compactMode'),
       mergedBars: game.settings.get(MODULE_ID, 'mergedBars'),
+      showBarControls: game.settings.get(MODULE_ID, 'showBarControls'),
       woundsOnlyAtZeroHP: game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP')
     };
 
@@ -171,19 +173,86 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const dicePools = [];
     const valueResources = [];
     const inlineResources = [];
-    const barResources = [];
+    const hpBars = [];
+    const resourceBars = [];
+
+    // HP comme premiere barre (toujours presente)
+    hpBars.push({
+      key: 'hp',
+      label: 'HP',
+      value: resources.hp.value,
+      max: resources.hp.max,
+      temp: resources.hp.temp,
+      color: resources.hp.color,
+      supportsMergedBars: true,
+      controls: [
+        { delta: -5, label: '-5' },
+        { delta: -1, label: '-1' },
+        { delta: 1, label: '+1' },
+        { delta: 5, label: '+5' }
+      ]
+    });
+
+    // Temp HP comme barre juste apres HP (visible uniquement si > 0)
+    if (resources.hp.temp) {
+      hpBars.push({
+        key: 'tempHp',
+        label: 'Temp HP',
+        value: resources.hp.temp,
+        max: resources.hp.temp,
+        color: '#9C27B0',
+        hideMax: true,
+        supportsMergedBars: true,
+        controls: [
+          { delta: -5, label: '-5' },
+          { delta: -1, label: '-1' },
+          { delta: 1, label: '+1' },
+          { delta: 5, label: '+5' }
+        ]
+      });
+    }
+
+    // Appliquer le degrade de couleur dynamique a la mana
+    if (classResources.mana) {
+      classResources.mana.color = this._getManaColor(classResources.mana);
+    }
 
     for (const [key, value] of Object.entries(classResources)) {
       if (!value || typeof value !== 'object') continue;
 
-      const entry = { key, label: `NIMBLE_DM_HELPER.resources.${key}`, ...value };
+      const entry = { key, labelKey: `NIMBLE_DM_HELPER.resources.${key}`, ...value };
 
       if (value.canStoreDice) {
         dicePools.push(entry);
       } else if (value.canStoreValue) {
         valueResources.push(entry);
+      } else if (key === 'mana' && value.max) {
+        // Mana comme barre avec support merged bars
+        resourceBars.push({
+          key: 'mana',
+          labelKey: 'NIMBLE_DM_HELPER.resources.mana',
+          value: value.value,
+          max: value.max,
+          formula: value.formula,
+          color: value.color,
+          supportsMergedBars: true,
+          controls: [
+            { delta: -1, label: '-1' },
+            { delta: 1, label: '+1' },
+            { delta: 5, label: '+5' }
+          ]
+        });
       } else if (value.displayType === 'bar') {
-        barResources.push(entry);
+        // Autres bar resources (ex: Lay on Hands)
+        resourceBars.push({
+          ...entry,
+          supportsMergedBars: true,
+          controls: [
+            { delta: -5, label: '-5' },
+            { delta: -1, label: '-1' },
+            { delta: 1, label: '+1' }
+          ]
+        });
       } else if (value.displayType === 'inline') {
         inlineResources.push(entry);
       }
@@ -195,11 +264,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     // Conditions actives
     const conditions = this._getConditions(actor);
 
-    // Appliquer le degrade de couleur dynamique a la mana
-    if (classResources.mana) {
-      classResources.mana.color = this._getManaColor(classResources.mana);
-    }
-
     return {
       id: actor.id,
       name: actor.name,
@@ -208,10 +272,11 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       className: classConfig.name || this._formatClassName(classId),
       level: level,
       resources: { ...resources, ...classResources },
+      hpBars,
+      resourceBars,
       dicePools,
       valueResources,
       inlineResources,
-      barResources,
       abilities,
       conditions,
       hasClassResources: Object.keys(classResources).length > 0,
@@ -292,14 +357,14 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   _onRender(context, options) {
     const html = this.element;
 
-    // Generer les wound boxes dynamiquement
+    // Generer les wound boxes dynamiquement (cliquables)
     html.querySelectorAll('.wound-boxes').forEach(el => {
       const current = parseInt(el.dataset.current) || 0;
       const max = parseInt(el.dataset.max) || 6;
       let boxesHtml = '';
       for (let j = 0; j < max; j++) {
         const filled = j < current ? 'filled' : '';
-        boxesHtml += `<i class="wound-box fa-solid fa-droplet ${filled}"></i>`;
+        boxesHtml += `<i class="wound-box fa-solid fa-droplet ${filled}" data-action="clickWound" data-index="${j}"></i>`;
       }
       el.innerHTML = boxesHtml;
     });
@@ -355,6 +420,15 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     // Listeners delegues : attaches une seule fois sur this.element
     if (!this._delegatedListenersAttached) {
       this._delegatedListenersAttached = true;
+
+      // Clic sur single-value pour editer (canStoreValue comme judgmentDice)
+      html.addEventListener('click', (event) => {
+        const el = event.target.closest('.single-value');
+        if (el) {
+          event.preventDefault();
+          NimbleDMHelperApp._onEditSingleValue.call(this, event, el);
+        }
+      });
 
       // Double-clic sur valeur pour editer
       html.addEventListener('dblclick', (event) => {
@@ -453,23 +527,55 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   /**
+   * Evalue une expression simple avec + et -
+   * @param {string} expr - L'expression à évaluer (ex: "10+5-3")
+   * @param {number} baseValue - Valeur de base si l'expression commence par + ou -
+   * @returns {number|null} - Le résultat ou null si invalide
+   */
+  _evaluateExpression(expr, baseValue = 0) {
+    if (expr === null || expr === undefined) return null;
+
+    const cleaned = String(expr).replace(/\s/g, '');
+    if (!cleaned) return null;
+
+    // Si l'expression commence par + ou -, utiliser la valeur de base
+    let expression = cleaned;
+    if (/^[+-]/.test(cleaned)) {
+      expression = baseValue + cleaned;
+    }
+
+    // Valider que l'expression ne contient que des chiffres, + et -
+    if (!/^[\d+\-]+$/.test(expression)) return null;
+
+    // Parser et évaluer l'expression
+    const tokens = expression.match(/[+-]?\d+/g);
+    if (!tokens) return null;
+
+    const result = tokens.reduce((acc, token) => acc + parseInt(token, 10), 0);
+    return isNaN(result) ? null : result;
+  }
+
+  /**
    * Prompt pour nouvelle valeur de de
    */
   async _promptForDieValue(currentValue, maxValue) {
     const result = await foundry.applications.api.DialogV2.prompt({
       window: { title: 'Valeur du dé' },
-      content: `<input type="number" name="value" value="${currentValue}" min="0" max="${maxValue}" style="width: 100%">`,
+      content: `<input type="text" name="value" value="${currentValue}" style="width: 100%">
+        <div style="font-size: 0.85em; color: #888; margin-top: 4px;">0-${maxValue} (calcul: +/-)</div>`,
       ok: {
         label: 'OK',
         callback: (event, button) => {
           const form = button.form ?? event.target.closest('form');
           const input = form?.querySelector('input[name="value"]');
-          return parseInt(input?.value);
+          return input?.value;
         }
       }
     });
-    if (result === null || isNaN(result)) return null;
-    return Math.clamp(result, 0, maxValue);
+    if (result === null) return null;
+    const evaluated = this._evaluateExpression(result, currentValue);
+    if (evaluated === null) return null;
+    return Math.clamp(evaluated, 0, maxValue);
   }
 
   /**
@@ -488,6 +594,32 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     await this.resourceTracker.adjustResource(actor, resource, delta);
+    this.render();
+  }
+
+  /**
+   * Gere le clic sur une wound box (toggle)
+   */
+  static async _onClickWound(event, target) {
+    event.preventDefault();
+    const card = target.closest('.character-card');
+    const actorId = card?.dataset?.actorId;
+    if (!actorId) return;
+
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+
+    const index = parseInt(target.dataset.index);
+    const system = actor.system;
+    const wounds = system.attributes?.wounds || system.wounds || { value: 0, max: 6 };
+    const current = wounds.value;
+
+    // Clic sur la derniere wound remplie -> la retire (toggle off)
+    // Sinon -> definit les wounds jusqu'a cet index (toggle on)
+    const newValue = (index === current - 1) ? index : index + 1;
+    const clampedValue = Math.clamp(newValue, 0, wounds.max);
+    const updatePath = system.attributes?.wounds ? 'system.attributes.wounds.value' : 'system.wounds.value';
+    await actor.update({ [updatePath]: clampedValue });
     this.render();
   }
 
@@ -632,7 +764,12 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     const currentValue = parseInt(target.dataset.value) || 0;
-    const newValue = await this._promptForSingleValue(resource, currentValue);
+    const dieSize = valueResource?.dataset?.dieSize || 'd6';
+    const maxDice = parseInt(valueResource?.dataset?.max) || 1;
+    const maxDieValue = parseInt(dieSize.replace('d', '')) || 6;
+    const maxValue = maxDice * maxDieValue;
+
+    const newValue = await this._promptForSingleValue(resource, currentValue, maxValue);
 
     if (newValue !== null && newValue !== currentValue) {
       await this.resourceTracker.setSingleValue(actor, resource, newValue);
@@ -643,21 +780,28 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   /**
    * Prompt pour nouvelle valeur unique
    */
-  async _promptForSingleValue(resource, currentValue) {
+  async _promptForSingleValue(resource, currentValue, maxValue = null) {
     const title = game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resource}`) || resource;
+    const maxHint = maxValue
+      ? `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">0-${maxValue} (calcul: +/-)</div>`
+      : `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">Calcul: +/-</div>`;
     const result = await foundry.applications.api.DialogV2.prompt({
       window: { title },
-      content: `<input type="number" name="value" value="${currentValue}" min="0" style="width: 100%">`,
+      content: `<input type="text" name="value" value="${currentValue}" style="width: 100%">${maxHint}`,
       ok: {
         label: 'OK',
         callback: (event, button) => {
           const form = button.form ?? event.target.closest('form');
           const input = form?.querySelector('input[name="value"]');
-          return parseInt(input?.value);
+          return input?.value;
         }
       }
     });
-    return (result === null || isNaN(result)) ? null : Math.max(0, result);
+    if (result === null) return null;
+    const evaluated = this._evaluateExpression(result, currentValue);
+    if (evaluated === null) return null;
+    const clamped = maxValue ? Math.clamp(evaluated, 0, maxValue) : Math.max(0, evaluated);
+    return clamped;
   }
 
   /**
@@ -696,17 +840,19 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const title = game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resource}`) || resource;
     const result = await foundry.applications.api.DialogV2.prompt({
       window: { title },
-      content: `<input type="number" name="value" value="${currentValue}" style="width: 100%">`,
+      content: `<input type="text" name="value" value="${currentValue}" style="width: 100%">
+        <div style="font-size: 0.85em; color: #888; margin-top: 4px;">Calcul: +/-</div>`,
       ok: {
         label: 'OK',
         callback: (event, button) => {
           const form = button.form ?? event.target.closest('form');
           const input = form?.querySelector('input[name="value"]');
-          return parseInt(input?.value);
+          return input?.value;
         }
       }
     });
-    return (result === null || isNaN(result)) ? null : result;
+    if (result === null) return null;
+    return this._evaluateExpression(result, currentValue);
   }
 
   /**

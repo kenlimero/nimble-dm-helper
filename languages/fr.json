@@ -96,6 +96,8 @@
       "showDicePoolMaxHint": "Affiche le nombre maximum de des a cote des habiletes de type pool de des",
       "mergedBars": "Barres fusionnees",
       "mergedBarsHint": "Fusionne le libelle et la valeur avec la barre de ressource sur une seule ligne pour les PV et la Mana. Masque les PV temporaires.",
+      "showBarControls": "Boutons +/- des barres",
+      "showBarControlsHint": "Affiche les boutons +/- sur les barres de ressources (PV, Mana, etc.) pour ajuster les valeurs",
       "woundsOnlyAtZeroHP": "Blessures uniquement a 0 PV",
       "woundsOnlyAtZeroHPHint": "N'affiche le suivi des blessures que lorsque le personnage est a 0 points de vie",
       "filterByPresence": "Filtrer par presence",

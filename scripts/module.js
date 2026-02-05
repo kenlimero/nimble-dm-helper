@@ -9,13 +9,22 @@ Hooks.once('init', async () => {
   registerHandlebarsHelpers();
 
   // Precharger les templates partials
-  const partialPath = `${MODULE_PATH}/templates/partials/character-card.hbs`;
-  await foundry.applications.handlebars.loadTemplates([partialPath]);
+  const partials = [
+    `${MODULE_PATH}/templates/partials/character-card.hbs`,
+    `${MODULE_PATH}/templates/partials/resource-bar.hbs`
+  ];
+  await foundry.applications.handlebars.loadTemplates(partials);
 
-  // Enregistrer le partial avec un alias court pour éviter les chemins hardcodés
-  const partialContent = Handlebars.partials[partialPath];
-  if (partialContent) {
-    Handlebars.registerPartial('nimble-character-card', partialContent);
+  // Enregistrer les partials avec des alias courts pour éviter les chemins hardcodés
+  const aliases = {
+    'nimble-character-card': `${MODULE_PATH}/templates/partials/character-card.hbs`,
+    'nimble-dm-helper.resource-bar': `${MODULE_PATH}/templates/partials/resource-bar.hbs`
+  };
+  for (const [alias, path] of Object.entries(aliases)) {
+    const content = Handlebars.partials[path];
+    if (content) {
+      Handlebars.registerPartial(alias, content);
+    }
   }
 });
 
@@ -98,6 +107,11 @@ function registerHandlebarsHelpers() {
   Handlebars.registerHelper('or', function(...args) {
     args.pop(); // remove Handlebars options object
     return args.some(Boolean);
+  });
+
+  Handlebars.registerHelper('and', function(...args) {
+    args.pop(); // remove Handlebars options object
+    return args.every(Boolean);
   });
 
   // Helper pour calculer le pourcentage

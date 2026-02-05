@@ -119,6 +119,17 @@ export function registerSettings() {
     onChange: () => game.nimbleDMHelper?.app?.render()
   });
 
+  // Afficher les boutons +/- sur les barres de ressources
+  game.settings.register(MODULE_ID, 'showBarControls', {
+    name: 'NIMBLE_DM_HELPER.settings.showBarControls',
+    hint: 'NIMBLE_DM_HELPER.settings.showBarControlsHint',
+    scope: 'client',
+    config: hasAccess,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
   // Afficher wounds uniquement a 0 HP
   game.settings.register(MODULE_ID, 'woundsOnlyAtZeroHP', {
     name: 'NIMBLE_DM_HELPER.settings.woundsOnlyAtZeroHP',
