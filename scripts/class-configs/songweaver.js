@@ -18,7 +18,7 @@ export const songweaverConfig = {
     songOfRest: {
       requiresFeature: "Song of Rest",
       displayType: 'inline',
-      resetOn: 'safeRest',
+      resetOn: 'newDay',
       maxProgression: [{ level: 2, max: 1 }],
       defaultToMax: true
     },

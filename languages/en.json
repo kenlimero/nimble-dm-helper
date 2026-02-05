@@ -10,6 +10,8 @@
     "rollDice": "Roll a die",
     "clearDice": "Clear all dice",
     "deleteAbilityConfirm": "Delete the ability <strong>{name}</strong>? This cannot be undone.",
+    "newDay": "New Day",
+    "newDayConfirm": "Reset all daily abilities for all characters?",
 
     "resources": {
       "hp": "Hit Points",
@@ -42,6 +44,7 @@
       "explosiveJudgment": "Explosive Judgment",
       "pilferedPower": "Pilfered Power",
       "shadowMinions": "Shadow Minions",
+      "beguilingInfluence": "Beguiling Influence",
       "bloodSight": "Blood Sight",
       "whispersOfTheGrave": "Whispers of the Grave",
       "glacialResilience": "Glacial Resilience",
@@ -73,7 +76,8 @@
     "notifications": {
       "dicePoolFull": "Dice pool is full!",
       "safeRestReset": "Safe Rest: {name}'s resources have been reset",
-      "restReset": "{name}'s resources have been reset"
+      "restReset": "{name}'s resources have been reset",
+      "newDayReset": "New Day: daily abilities have been reset"
     },
 
     "settings": {

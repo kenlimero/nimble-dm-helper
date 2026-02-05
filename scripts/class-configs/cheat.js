@@ -5,7 +5,7 @@ export const cheatConfig = {
     cheat: {
       requiresFeature: 'Cheat!',
       displayType: 'inline',
-      resetOn: 'safeRest',
+      resetOn: 'newDay',
       defaultToMax: true,
       maxProgression: [{ level: 2, max: 1 }]
     },
@@ -19,6 +19,7 @@ export const cheatConfig = {
     quickReadDay: {
       requiresFeature: 'Quick Read',
       displayType: 'inline',
+      resetOn: 'newDay',
       defaultToMax: true,
       maxProgression: [{ level: 5, max: 1 }]
     },

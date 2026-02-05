@@ -43,6 +43,11 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       resizable: true,
       controls: [
         {
+          icon: 'fas fa-sun',
+          action: 'newDay',
+          label: 'NIMBLE_DM_HELPER.newDay'
+        },
+        {
           icon: 'fas fa-sync-alt',
           action: 'refresh',
           label: 'NIMBLE_DM_HELPER.refresh'
@@ -61,7 +66,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       deleteAbility: NimbleDMHelperApp._onDeleteAbility,
       editDieValue: NimbleDMHelperApp._onEditDieValueAction,
       deleteDie: NimbleDMHelperApp._onDeleteDieAction,
-      clickWound: NimbleDMHelperApp._onClickWound
+      clickWound: NimbleDMHelperApp._onClickWound,
+      newDay: NimbleDMHelperApp._onNewDay
     }
   };
 
@@ -640,6 +646,27 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
    */
   static _onRefresh(event, target) {
     this.render({ force: true });
+  }
+
+  /**
+   * Nouveau jour : reset les ressources avec resetOn: 'newDay'
+   */
+  static async _onNewDay(event, target) {
+    const confirmed = await foundry.applications.api.DialogV2.prompt({
+      window: { title: game.i18n.localize('NIMBLE_DM_HELPER.newDay') },
+      content: `<p>${game.i18n.localize('NIMBLE_DM_HELPER.newDayConfirm')}</p>`
+    });
+    if (!confirmed) return;
+
+    const resourceTracker = this.resourceTracker;
+    if (!resourceTracker) return;
+
+    const actors = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
+    for (const actor of actors) {
+      await resourceTracker.resetRestResources(actor, 'newDay');
+    }
+
+    ui.notifications.info(game.i18n.localize('NIMBLE_DM_HELPER.notifications.newDayReset'));
   }
 
   /**

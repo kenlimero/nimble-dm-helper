@@ -12,9 +12,9 @@ export const zephyrConfig = {
     etherealProjection: {
       requiresFeature: 'Ethereal Projection',
       displayType: 'inline',
-      resetOn: 'combatEnd',
+      resetOn: 'newDay',
       defaultToMax: true,
-      maxProgression: [{ level: 2, max: 1 }]
+      maxProgression: [{ level: 3, max: 1 }]
     },
     blur: {
       requiresFeature: 'Blur',

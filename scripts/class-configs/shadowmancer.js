@@ -13,17 +13,24 @@ export const shadowmancerConfig = {
       displayType: 'inline',
       defaultValue: 0
     },
+    beguilingInfluence: {
+      requiresFeature: 'Beguiling Influence',
+      displayType: 'inline',
+      resetOn: 'newDay',
+      defaultToMax: true,
+      maxProgression: [{ level: 4, max: 1 }]
+    },  
     bloodSight: {
       requiresFeature: 'Blood Sight',
       displayType: 'inline',
-      resetOn: 'safeRest',
+      resetOn: 'newDay',
       defaultToMax: true,
       maxProgression: [{ level: 4, max: 1 }]
     },  
     whispersOfTheGrave: {
       requiresFeature: 'Whispers of the Grave',
       displayType: 'inline',
-      resetOn: 'safeRest',
+      resetOn: 'newDay',
       defaultToMax: true,
       maxProgression: [{ level: 4, max: 1 }]
     },  

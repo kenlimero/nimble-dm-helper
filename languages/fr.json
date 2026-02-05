@@ -10,6 +10,8 @@
     "rollDice": "Lancer un dé",
     "clearDice": "Vider tous les dés",
     "deleteAbilityConfirm": "Supprimer la capacite <strong>{name}</strong> ? Cette action est irreversible.",
+    "newDay": "Nouveau Jour",
+    "newDayConfirm": "Réinitialiser toutes les habiletés quotidiennes pour tous les personnages ?",
 
     "resources": {
       "hp": "Points de vie",
@@ -42,6 +44,7 @@
       "explosiveJudgment": "Jugement Explosif",
       "pilferedPower": "Pouvoir derobe",
       "shadowMinions": "Serviteurs d'ombre",
+      "beguilingInfluence": "Influence Beliqueuse",
       "bloodSight": "Vue Ensanglantee",
       "whispersOfTheGrave": "Murmure de la Tombe",
       "glacialResilience": "Resilience Glaciale",
@@ -74,7 +77,8 @@
     "notifications": {
       "dicePoolFull": "Le pool de dés est plein!",
       "safeRestReset": "Safe Rest : les ressources de {name} ont été réinitialisées",
-      "restReset": "Les ressources de {name} ont été réinitialisées"
+      "restReset": "Les ressources de {name} ont été réinitialisées",
+      "newDayReset": "Nouveau Jour : les habiletés quotidiennes ont été réinitialisées"
     },
 
     "settings": {

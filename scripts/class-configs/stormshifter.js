@@ -20,14 +20,14 @@ export const stormshifterConfig = {
     stormborn: {
       requiresFeature: 'Stormborn (1)',
       displayType: 'inline',
-      resetOn: 'safeRest',
+      resetOn: 'newDay',
       maxProgression: [{ level: 8, max: 1 }],
       defaultToMax: true
     },
     attunedToNature: {
       requiresFeature: 'Attuned to Nature',
       displayType: 'inline',
-      resetOn: 'safeRest',
+      resetOn: 'newDay',
       maxProgression: [{ level: 3, max: 1 }],
       defaultToMax: true
     },
