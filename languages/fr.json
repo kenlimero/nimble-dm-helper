@@ -12,6 +12,8 @@
     "deleteAbilityConfirm": "Supprimer la capacite <strong>{name}</strong> ? Cette action est irreversible.",
     "newDay": "Nouveau Jour",
     "newDayConfirm": "Réinitialiser toutes les habiletés quotidiennes pour tous les personnages ?",
+    "safeRestAll": "Safe Rest (Tous)",
+    "safeRestAllConfirm": "Effectuer un Safe Rest pour tous les personnages ? Cela restaurera les PV, la mana, guérira 1 blessure et réinitialisera les habiletés de repos.",
 
     "resources": {
       "hp": "Points de vie",
@@ -78,7 +80,8 @@
       "dicePoolFull": "Le pool de dés est plein!",
       "safeRestReset": "Safe Rest : les ressources de {name} ont été réinitialisées",
       "restReset": "Les ressources de {name} ont été réinitialisées",
-      "newDayReset": "Nouveau Jour : les habiletés quotidiennes ont été réinitialisées"
+      "newDayReset": "Nouveau Jour : les habiletés quotidiennes ont été réinitialisées",
+      "safeRestAllReset": "Safe Rest : les habiletés de repos ont été réinitialisées pour tous les personnages"
     },
 
     "settings": {

@@ -12,6 +12,8 @@
     "deleteAbilityConfirm": "Delete the ability <strong>{name}</strong>? This cannot be undone.",
     "newDay": "New Day",
     "newDayConfirm": "Reset all daily abilities for all characters?",
+    "safeRestAll": "Safe Rest (All)",
+    "safeRestAllConfirm": "Perform a Safe Rest for all characters? This will restore HP, mana, heal 1 wound, and reset rest abilities.",
 
     "resources": {
       "hp": "Hit Points",
@@ -77,7 +79,8 @@
       "dicePoolFull": "Dice pool is full!",
       "safeRestReset": "Safe Rest: {name}'s resources have been reset",
       "restReset": "{name}'s resources have been reset",
-      "newDayReset": "New Day: daily abilities have been reset"
+      "newDayReset": "New Day: daily abilities have been reset",
+      "safeRestAllReset": "Safe Rest: rest abilities have been reset for all characters"
     },
 
     "settings": {

@@ -40,19 +40,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     window: {
       title: 'NIMBLE_DM_HELPER.title',
       minimizable: true,
-      resizable: true,
-      controls: [
-        {
-          icon: 'fas fa-sun',
-          action: 'newDay',
-          label: 'NIMBLE_DM_HELPER.newDay'
-        },
-        {
-          icon: 'fas fa-sync-alt',
-          action: 'refresh',
-          label: 'NIMBLE_DM_HELPER.refresh'
-        }
-      ]
+      resizable: true
     },
     actions: {
       adjustResource: NimbleDMHelperApp._onResourceAdjust,
@@ -67,7 +55,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       editDieValue: NimbleDMHelperApp._onEditDieValueAction,
       deleteDie: NimbleDMHelperApp._onDeleteDieAction,
       clickWound: NimbleDMHelperApp._onClickWound,
-      newDay: NimbleDMHelperApp._onNewDay
+      newDay: NimbleDMHelperApp._onResetAll,
+      safeRestAll: NimbleDMHelperApp._onResetAll
     }
   };
 
@@ -77,6 +66,36 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       scrollable: ['.dm-helper-content']
     }
   };
+
+  /**
+   * Retourne les controles de la barre de titre (GM only pour Safe Rest et New Day)
+   */
+  _getHeaderControls() {
+    const controls = [
+      {
+        icon: 'fas fa-sync-alt',
+        action: 'refresh',
+        label: 'NIMBLE_DM_HELPER.refresh'
+      }
+    ];
+
+    if (game.user.isGM) {
+      controls.unshift(
+        {
+          icon: 'fas fa-sun',
+          action: 'newDay',
+          label: 'NIMBLE_DM_HELPER.newDay'
+        },
+        {
+          icon: 'fas fa-campground',
+          action: 'safeRestAll',
+          label: 'NIMBLE_DM_HELPER.safeRestAll'
+        }
+      );
+    }
+
+    return controls;
+  }
 
   /**
    * Recupere les donnees pour le template
@@ -649,12 +668,16 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   /**
-   * Nouveau jour : reset les ressources avec resetOn: 'newDay'
+   * Reset global : reset les ressources pour tous les personnages selon l'action (newDay, safeRestAll)
    */
-  static async _onNewDay(event, target) {
+  static async _onResetAll(event, target) {
+    const action = target.dataset.action;
+    const restType = action === 'safeRestAll' ? 'safeRest' : 'newDay';
+    const i18nKey = action === 'safeRestAll' ? 'safeRestAll' : 'newDay';
+
     const confirmed = await foundry.applications.api.DialogV2.prompt({
-      window: { title: game.i18n.localize('NIMBLE_DM_HELPER.newDay') },
-      content: `<p>${game.i18n.localize('NIMBLE_DM_HELPER.newDayConfirm')}</p>`
+      window: { title: game.i18n.localize(`NIMBLE_DM_HELPER.${i18nKey}`) },
+      content: `<p>${game.i18n.localize(`NIMBLE_DM_HELPER.${i18nKey}Confirm`)}</p>`
     });
     if (!confirmed) return;
 
@@ -663,10 +686,36 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     const actors = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
     for (const actor of actors) {
-      await resourceTracker.resetRestResources(actor, 'newDay');
+      // Safe Rest : restaurer HP, mana, temp HP et guerir 1 wound
+      if (restType === 'safeRest') {
+        const system = actor.system;
+        const hp = system.attributes?.hp || system.hp || { value: 0, max: 0 };
+        const basePath = system.attributes?.hp ? 'system.attributes.hp' : 'system.hp';
+
+        await actor.update({
+          [`${basePath}.value`]: hp.max || 0,
+          [`${basePath}.temp`]: 0
+        });
+
+        const mana = system.resources?.mana;
+        if (mana && mana.max) {
+          await actor.update({
+            'system.resources.mana.value': mana.max,
+            'system.resources.mana.current': mana.max
+          });
+        }
+
+        const wounds = system.attributes?.wounds || system.wounds || { value: 0 };
+        const woundPath = system.attributes?.wounds ? 'system.attributes.wounds.value' : 'system.wounds.value';
+        if (wounds.value > 0) {
+          await actor.update({ [woundPath]: wounds.value - 1 });
+        }
+      }
+
+      await resourceTracker.resetRestResources(actor, restType);
     }
 
-    ui.notifications.info(game.i18n.localize('NIMBLE_DM_HELPER.notifications.newDayReset'));
+    ui.notifications.info(game.i18n.localize(`NIMBLE_DM_HELPER.notifications.${i18nKey}Reset`));
   }
 
   /**
