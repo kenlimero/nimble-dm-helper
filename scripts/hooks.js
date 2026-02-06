@@ -39,8 +39,14 @@ export function registerHooks() {
     debouncedRender();
   });
 
-  // Re-render quand un item est modifie
+  // Re-render quand un item est modifie ou supprime
   Hooks.on('updateItem', (item, changes, options, userId) => {
+    if (!hasAccess()) return;
+    if (!game.nimbleDMHelper?.app?.rendered) return;
+    debouncedRender();
+  });
+
+  Hooks.on('deleteItem', (item, options, userId) => {
     if (!hasAccess()) return;
     if (!game.nimbleDMHelper?.app?.rendered) return;
     debouncedRender();

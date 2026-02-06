@@ -24,6 +24,9 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   render(options = {}) {
     if (this._renderQueued && !options.force) return;
     this._renderQueued = true;
+    // Sauvegarder la position de scroll avant le re-render
+    const scrollEl = this.element?.querySelector('.dm-helper-content');
+    if (scrollEl) this._savedScrollTop = scrollEl.scrollTop;
     requestAnimationFrame(() => {
       this._renderQueued = false;
       super.render(options);
@@ -474,6 +477,12 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         }
       });
     }
+
+    // Restaurer la position de scroll apres le contenu dynamique
+    const scrollEl = html.querySelector('.dm-helper-content');
+    if (scrollEl && this._savedScrollTop !== undefined) {
+      scrollEl.scrollTop = this._savedScrollTop;
+    }
   }
 
   /**
@@ -530,7 +539,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const newValue = await this._promptForDieValue(currentValue, maxValue);
     if (newValue !== null) {
       await this.resourceTracker.setDieValue(actor, resourceKey, index, newValue);
-      this.render();
     }
   }
 
@@ -548,7 +556,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     await this.resourceTracker.setDieValue(actor, resourceKey, index, 0);
-    this.render();
   }
 
   /**
@@ -619,7 +626,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     await this.resourceTracker.adjustResource(actor, resource, delta);
-    this.render();
   }
 
   /**
@@ -645,7 +651,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const clampedValue = Math.clamp(newValue, 0, wounds.max);
     const updatePath = system.attributes?.wounds ? 'system.attributes.wounds.value' : 'system.wounds.value';
     await actor.update({ [updatePath]: clampedValue });
-    this.render();
   }
 
   /**
@@ -744,7 +749,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     await this.resourceTracker.rollAndAddDie(actor, resource, dieSize);
-    this.render();
   }
 
   /**
@@ -763,7 +767,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     await this.resourceTracker.clearDice(actor, resource);
-    this.render();
   }
 
   /**
@@ -784,7 +787,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     await this.resourceTracker.rollAndSetSingleValue(actor, resource, dieSize, diceCount);
-    this.render();
   }
 
   /**
@@ -802,7 +804,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (!actor) return;
 
     await this.resourceTracker.setSingleValue(actor, resource, 0);
-    this.render();
   }
 
   /**
@@ -829,7 +830,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     if (confirm) {
       await item.delete();
-      this.render();
     }
   }
 
@@ -858,7 +858,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     if (newValue !== null && newValue !== currentValue) {
       await this.resourceTracker.setSingleValue(actor, resource, newValue);
-      this.render();
     }
   }
 
@@ -911,7 +910,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       if (newValue !== null && newValue !== currentValue) {
         const delta = newValue - currentValue;
         await this.resourceTracker.adjustResource(actor, resource, delta);
-        this.render();
       }
     } finally {
       this._dialogOpen = false;
