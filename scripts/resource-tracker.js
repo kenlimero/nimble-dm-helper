@@ -50,13 +50,27 @@ export class ResourceTracker {
       return getter ? getter.call(this, actor, level, stats) : null;
     }
 
-    // Mana (stocke dans system.resources.mana)
+    // Mana (stocke dans system.resources.mana, ou calcule par le module en fallback)
     if (condition.type === 'mana') {
+      const systemMax = this._getManaMax(actor);
+      if (systemMax > 0) {
+        // Mana geree par le systeme Nimble
+        return {
+          value: this._getManaValue(actor),
+          max: systemMax,
+          formula: condition.formula,
+          color: condition.color
+        };
+      }
+      // Fallback : calculer le max depuis la config (ex: maxStat, maxProgression...)
+      const computedMax = this._computeMax(condition, stats, level);
+      if (!computedMax) return null;
       return {
-        value: this._getManaValue(actor),
-        max: this._getManaMax(actor),
+        value: actor.getFlag(MODULE_ID, 'manaValue') ?? computedMax,
+        max: computedMax,
         formula: condition.formula,
-        color: condition.color
+        color: condition.color,
+        moduleManaged: true
       };
     }
 
@@ -224,15 +238,25 @@ export class ResourceTracker {
       await actor.update({ [updatePath]: newValue });
     }
     else if (resourcePath === 'mana') {
-      const mana = actor.system?.resources?.mana;
-      if (mana) {
-        const maxMana = mana.max || 0;
-        const current = mana.value ?? mana.current ?? 0;
+      const systemMana = actor.system?.resources?.mana;
+      if (systemMana && systemMana.max > 0) {
+        // Mana geree par le systeme Nimble
+        const maxMana = systemMana.max;
+        const current = systemMana.value ?? systemMana.current ?? 0;
         const newValue = Math.clamp(current + delta, 0, maxMana);
         await actor.update({
           'system.resources.mana.value': newValue,
           'system.resources.mana.current': newValue
         });
+      } else {
+        // Mana geree par le module (fallback)
+        const condition = this._getCondition(actor, 'mana');
+        const stats = getStats(actor);
+        const level = getActorLevel(actor);
+        const maxMana = this._computeMax(condition, stats, level) || 0;
+        const current = actor.getFlag(MODULE_ID, 'manaValue') ?? maxMana;
+        const newValue = Math.clamp(current + delta, 0, maxMana);
+        await actor.setFlag(MODULE_ID, 'manaValue', newValue);
       }
     }
     // Ressources custom via flags

@@ -698,11 +698,20 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         });
 
         const mana = system.resources?.mana;
-        if (mana && mana.max) {
+        if (mana && mana.max > 0) {
+          // Mana geree par le systeme Nimble
           await actor.update({
             'system.resources.mana.value': mana.max,
             'system.resources.mana.current': mana.max
           });
+        } else {
+          // Mana geree par le module (fallback) : remettre au max
+          const classId = getActorClass(actor);
+          const config = CLASS_CONFIGS[classId];
+          const manaCondition = config?.resourceConditions?.mana;
+          if (manaCondition?.type === 'mana' && manaCondition.maxStat) {
+            await actor.unsetFlag(MODULE_ID, 'manaValue');
+          }
         }
 
         const wounds = system.attributes?.wounds || system.wounds || { value: 0 };

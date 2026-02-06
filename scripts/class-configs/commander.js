@@ -50,6 +50,13 @@ export const commanderConfig = {
       resetOn: 'combatEnd',
       defaultToMax: true,
       maxProgression: [{ level: 2, max: 1 }]
+    },
+    // SPELLBLADE
+    mana: {
+      requiresFeature: 'Arcane Command',
+      type: 'mana',
+      formula: 'INT',
+      maxStat: 'int'
     }
   }
 };
