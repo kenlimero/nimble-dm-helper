@@ -6,6 +6,12 @@
       <div class="no-characters">
         <i class="fas fa-users-slash"></i>
         <p>{{localize "NIMBLE_DM_HELPER.noCharacters"}}</p>
+        {{#if @root.isGM}}
+        <p class="drop-hint">
+          <i class="fas fa-hand-pointer"></i>
+          {{localize "NIMBLE_DM_HELPER.dropHint"}}
+        </p>
+        {{/if}}
       </div>
     {{/each}}
   </section>

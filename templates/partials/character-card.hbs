@@ -1,4 +1,11 @@
-<article class="character-card" data-actor-id="{{id}}">
+<article class="character-card {{#if isPinned}}pinned{{/if}}" data-actor-id="{{id}}">
+  {{#if isPinned}}
+  {{#if @root.isGM}}
+  <button class="pin-remove" type="button" data-action="removePin" title="{{localize 'NIMBLE_DM_HELPER.removePin'}}">
+    <i class="fas fa-times"></i>
+  </button>
+  {{/if}}
+  {{/if}}
   <header class="character-header">
     <img class="character-avatar" src="{{img}}" alt="{{name}}" data-action="openSheet" title="{{localize 'NIMBLE_DM_HELPER.openSheet'}}">
     <div class="character-info">

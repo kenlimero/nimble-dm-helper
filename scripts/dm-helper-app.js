@@ -15,6 +15,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     super(options);
     this.resourceTracker = new ResourceTracker(this);
     this._renderQueued = false;
+    this._sessionPinnedActors = new Set();
   }
 
   /**
@@ -59,7 +60,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       deleteDie: NimbleDMHelperApp._onDeleteDieAction,
       clickWound: NimbleDMHelperApp._onClickWound,
       newDay: NimbleDMHelperApp._onResetAll,
-      safeRestAll: NimbleDMHelperApp._onResetAll
+      safeRestAll: NimbleDMHelperApp._onResetAll,
+      removePin: NimbleDMHelperApp._onRemovePin
     }
   };
 
@@ -101,6 +103,79 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   /**
+   * Gere le drop d'un Actor sur la fenetre
+   */
+  async _handleDrop(event) {
+    event.preventDefault();
+    if (!game.user.isGM) return;
+
+    let data;
+    try {
+      data = JSON.parse(event.dataTransfer.getData('text/plain'));
+    } catch (e) {
+      return;
+    }
+
+    if (data.type !== 'Actor') return;
+
+    const actor = data.uuid ? await fromUuid(data.uuid) : game.actors.get(data.id);
+    if (!actor) return;
+
+    await this._pinActor(actor.id);
+  }
+
+  /**
+   * Retourne l'ensemble des IDs d'acteurs epingles (persistent + session)
+   */
+  _getPinnedActorIds() {
+    const persist = game.settings.get(MODULE_ID, 'persistPinnedActors');
+    const persisted = persist ? game.settings.get(MODULE_ID, 'pinnedActors') : [];
+    return new Set([...persisted, ...this._sessionPinnedActors]);
+  }
+
+  /**
+   * Epingle un acteur (persistent ou session selon le setting)
+   */
+  async _pinActor(actorId) {
+    const persist = game.settings.get(MODULE_ID, 'persistPinnedActors');
+
+    if (persist) {
+      const current = game.settings.get(MODULE_ID, 'pinnedActors');
+      if (!current.includes(actorId)) {
+        await game.settings.set(MODULE_ID, 'pinnedActors', [...current, actorId]);
+      }
+    } else {
+      this._sessionPinnedActors.add(actorId);
+    }
+
+    this.render();
+  }
+
+  /**
+   * Retire un acteur epingle (des deux stores)
+   */
+  async _unpinActor(actorId) {
+    const current = game.settings.get(MODULE_ID, 'pinnedActors');
+    if (current.includes(actorId)) {
+      await game.settings.set(MODULE_ID, 'pinnedActors', current.filter(id => id !== actorId));
+    }
+    this._sessionPinnedActors.delete(actorId);
+    this.render();
+  }
+
+  /**
+   * Action handler : retire un personnage epingle
+   */
+  static async _onRemovePin(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    const card = target.closest('.character-card');
+    const actorId = card?.dataset?.actorId;
+    if (!actorId) return;
+    await this._unpinActor(actorId);
+  }
+
+  /**
    * Recupere les donnees pour le template
    */
   async _prepareContext(options = {}) {
@@ -138,10 +213,31 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       );
     }
 
+    // Merge pinned actors (GM uniquement)
+    const autoDiscoveredIds = new Set(playerCharacters.map(a => a.id));
+    const pinnedIds = isGM ? this._getPinnedActorIds() : new Set();
+
+    const additionalPinned = [];
+    for (const id of pinnedIds) {
+      if (autoDiscoveredIds.has(id)) continue;
+      const actor = game.actors.get(id);
+      if (actor) {
+        additionalPinned.push(actor);
+      }
+    }
+
+    const allActors = [...playerCharacters, ...additionalPinned];
+
     // Construire les donnees de chaque personnage
     data.characters = await Promise.all(
-      playerCharacters.map(actor => this._buildCharacterData(actor))
+      allActors.map(async (actor) => {
+        const charData = await this._buildCharacterData(actor);
+        charData.isPinned = pinnedIds.has(actor.id) && !autoDiscoveredIds.has(actor.id);
+        return charData;
+      })
     );
+
+    data.isGM = isGM;
 
     data.settings = {
       showAbilities: game.settings.get(MODULE_ID, 'showAbilities'),
@@ -476,6 +572,26 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
           this._hideAbilityTooltip();
         }
       });
+
+      // Drag and drop : autoriser le drop + feedback visuel
+      html.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        const content = event.target.closest('.dm-helper-content');
+        if (content) content.classList.add('drop-hover');
+      });
+
+      html.addEventListener('dragleave', (event) => {
+        const content = event.target.closest('.dm-helper-content');
+        if (content && !content.contains(event.relatedTarget)) {
+          content.classList.remove('drop-hover');
+        }
+      });
+
+      html.addEventListener('drop', (event) => {
+        const content = html.querySelector('.dm-helper-content');
+        if (content) content.classList.remove('drop-hover');
+        this._handleDrop(event);
+      });
     }
 
     // Restaurer la position de scroll apres le contenu dynamique
@@ -723,6 +839,17 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         const woundPath = system.attributes?.wounds ? 'system.attributes.wounds.value' : 'system.wounds.value';
         if (wounds.value > 0) {
           await actor.update({ [woundPath]: wounds.value - 1 });
+        }
+
+        // Reset hit dice to max
+        if (actor.HitDiceManager) {
+          const { updates } = actor.HitDiceManager.getUpdateData({
+            upperLimit: actor.HitDiceManager.max,
+            restoreLargest: true
+          });
+          if (Object.keys(updates).length > 0) {
+            await actor.update(updates);
+          }
         }
       }
 

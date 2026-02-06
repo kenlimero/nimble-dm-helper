@@ -152,6 +152,25 @@ export function registerSettings() {
     onChange: () => game.nimbleDMHelper?.app?.render()
   });
 
+  // Sauvegarder les personnages epingles (drag and drop)
+  game.settings.register(MODULE_ID, 'persistPinnedActors', {
+    name: 'NIMBLE_DM_HELPER.settings.persistPinnedActors',
+    hint: 'NIMBLE_DM_HELPER.settings.persistPinnedActorsHint',
+    scope: 'world',
+    config: isGM,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
+  // Liste des acteurs epingles (stockage interne)
+  game.settings.register(MODULE_ID, 'pinnedActors', {
+    scope: 'world',
+    config: false,
+    type: Array,
+    default: []
+  });
+
   // Position sauvegardee
   game.settings.register(MODULE_ID, 'windowPosition', {
     scope: 'client',

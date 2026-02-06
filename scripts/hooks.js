@@ -52,6 +52,22 @@ export function registerHooks() {
     debouncedRender();
   });
 
+  // Nettoyer les acteurs epingles quand un acteur est supprime
+  Hooks.on('deleteActor', (actor, options, userId) => {
+    if (!game.user.isGM) return;
+
+    const pinnedActors = game.settings.get(MODULE_ID, 'pinnedActors');
+    if (pinnedActors.includes(actor.id)) {
+      game.settings.set(MODULE_ID, 'pinnedActors', pinnedActors.filter(id => id !== actor.id));
+    }
+
+    game.nimbleDMHelper?.app?._sessionPinnedActors?.delete(actor.id);
+
+    if (game.nimbleDMHelper?.app?.rendered) {
+      debouncedRender();
+    }
+  });
+
   // Re-render quand le statut d'un utilisateur change (connexion/déconnexion)
   Hooks.on('updateUser', (user, changes, options, userId) => {
     if (!hasAccess()) return;

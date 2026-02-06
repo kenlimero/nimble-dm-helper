@@ -1017,6 +1017,64 @@
   display: none;
 }
 
+/* ============================================
+   DRAG & DROP / PIN STYLES
+   ============================================ */
+
+/* Drop zone visual feedback */
+.dm-helper-content.drop-hover {
+  outline: 2px dashed var(--ndh-primary);
+  outline-offset: -4px;
+  background: hsla(41, 18%, 54%, 0.08);
+}
+
+/* Pinned character card indicator */
+.character-card.pinned {
+  position: relative;
+  border-left: 3px solid var(--ndh-primary);
+}
+
+.character-card.pinned .character-header {
+  padding-right: 24px;
+}
+
+/* Remove pin button — coin haut-droit de la carte */
+.pin-remove {
+  all: unset;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--ndh-text-muted);
+  cursor: pointer;
+  font-size: 0.65rem;
+  transition: background 0.2s, color 0.2s;
+  z-index: 2;
+}
+
+.pin-remove:hover {
+  background: var(--ndh-hp-low, #F44336);
+  color: #fff;
+}
+
+/* Drop hint in empty state */
+.drop-hint {
+  font-size: 0.8rem;
+  color: var(--ndh-text-muted);
+  margin-top: 8px;
+  opacity: 0.7;
+}
+
+.drop-hint i {
+  margin-right: 4px;
+}
+
 /* Responsive */
 @media (max-width: 400px) {
   .character-header {

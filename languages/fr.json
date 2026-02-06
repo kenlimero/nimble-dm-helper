@@ -10,6 +10,8 @@
     "rollDice": "Lancer un dé",
     "clearDice": "Vider tous les dés",
     "deleteAbilityConfirm": "Supprimer la capacite <strong>{name}</strong> ? Cette action est irreversible.",
+    "removePin": "Retirer le personnage epingle",
+    "dropHint": "Glissez un personnage ici pour l'epingler",
     "newDay": "Nouveau Jour",
     "newDayConfirm": "Réinitialiser toutes les habiletés quotidiennes pour tous les personnages ?",
     "safeRestAll": "Safe Rest (Tous)",
@@ -81,7 +83,8 @@
       "safeRestReset": "Safe Rest : les ressources de {name} ont été réinitialisées",
       "restReset": "Les ressources de {name} ont été réinitialisées",
       "newDayReset": "Nouveau Jour : les habiletés quotidiennes ont été réinitialisées",
-      "safeRestAllReset": "Safe Rest : les habiletés de repos ont été réinitialisées pour tous les personnages"
+      "safeRestAllReset": "Safe Rest : les habiletés de repos ont été réinitialisées pour tous les personnages",
+      "dropNotCharacter": "Seuls les personnages joueurs peuvent etre deposes ici"
     },
 
     "settings": {
@@ -108,7 +111,9 @@
       "woundsOnlyAtZeroHP": "Blessures uniquement a 0 PV",
       "woundsOnlyAtZeroHPHint": "N'affiche le suivi des blessures que lorsque le personnage est a 0 points de vie",
       "filterByPresence": "Filtrer par presence",
-      "filterByPresenceHint": "N'affiche que les personnages des joueurs connectes qui les ont definis comme personnage principal"
+      "filterByPresenceHint": "N'affiche que les personnages des joueurs connectes qui les ont definis comme personnage principal",
+      "persistPinnedActors": "Sauvegarder les personnages epingles",
+      "persistPinnedActorsHint": "Lorsque active, les personnages ajoutes par glisser-deposer sont sauvegardes entre les sessions. Sinon, ils ne sont conserves que pour la session en cours."
     }
   }
 }
