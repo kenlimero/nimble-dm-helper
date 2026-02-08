@@ -389,6 +389,48 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
+.die-size-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+.die-icon-d4 {
+  -webkit-mask-image: url('../assets/dices/d4.svg');
+  mask-image: url('../assets/dices/d4.svg');
+}
+
+.die-icon-d6 {
+  -webkit-mask-image: url('../assets/dices/d6.svg');
+  mask-image: url('../assets/dices/d6.svg');
+}
+
+.die-icon-d8 {
+  -webkit-mask-image: url('../assets/dices/d8.svg');
+  mask-image: url('../assets/dices/d8.svg');
+}
+
+.die-icon-d10 {
+  -webkit-mask-image: url('../assets/dices/d10.svg');
+  mask-image: url('../assets/dices/d10.svg');
+}
+
+.die-icon-d12 {
+  -webkit-mask-image: url('../assets/dices/d12.svg');
+  mask-image: url('../assets/dices/d12.svg');
+}
+
+.die-icon-d20 {
+  -webkit-mask-image: url('../assets/dices/d20.svg');
+  mask-image: url('../assets/dices/d20.svg');
+}
+
 .dice-count {
   font-family: 'Roboto Mono', monospace;
   font-size: 0.75rem;
@@ -1085,4 +1127,24 @@
     width: 100%;
     margin-top: 4px;
   }
+}
+
+/* ============================================
+   SETTINGS PANEL - Group Headers
+   ============================================ */
+
+.ndh-settings-group-header {
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 0 4px;
+  margin-top: 12px;
+  border-top: 1px solid var(--color-border-light-tertiary, #999);
+  color: var(--color-text-dark-primary, #191813);
+}
+
+.ndh-settings-group-header:first-child {
+  margin-top: 0;
+  border-top: none;
 }

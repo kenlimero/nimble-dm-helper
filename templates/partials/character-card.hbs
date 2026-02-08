@@ -22,7 +22,8 @@
   </header>
 
   <div class="character-resources">
-    {{!-- HP Bars (HP, Temp HP) --}}
+    {{!-- HP Bars (HP, Temp HP), Wounds, Mana --}}
+    {{#if @root.settings.showHPMana}}
     {{#each hpBars}}
     {{> "nimble-dm-helper.resource-bar" }}
     {{/each}}
@@ -41,21 +42,27 @@
     </div>
     {{/if}}
 
-    {{!-- Resource Bars (Mana, Lay on Hands, etc.) --}}
-    {{#each resourceBars}}
+    {{!-- Mana Bar --}}
+    {{#each manaBars}}
     {{> "nimble-dm-helper.resource-bar" }}
     {{/each}}
+    {{/if}}
+
+    {{!-- Other Resource Bars (Lay on Hands, etc.) --}}
+    {{#if @root.settings.showOtherBars}}
+    {{#each otherResourceBars}}
+    {{> "nimble-dm-helper.resource-bar" }}
+    {{/each}}
+    {{/if}}
 
     <!-- Dice Pools (dynamic based on canStoreDice) -->
+    {{#if @root.settings.showDiceResources}}
     {{#each dicePools}}
     <div class="dice-pool {{key}}-dice" data-resource="{{key}}" data-die-size="{{dieSize}}" data-max="{{max}}" style="border-left: 3px solid {{color}};">
       <div class="dice-header">
         <span class="resource-label">{{localize labelKey}}</span>
         <span class="dice-info">
-          <span class="die-size-badge" style="background: {{color}};">{{dieSize}}</span>
-          {{#if @root.settings.showDicePoolMax}}
-          <span class="value-max">max: {{max}}</span>
-          {{/if}}
+          <span class="die-size-icon die-icon-{{dieSize}}" style="background: {{color}};" title="{{dieSize}}"></span>
         </span>
       </div>
       <div class="dice-display" data-color="{{color}}">
@@ -63,22 +70,27 @@
       </div>
     </div>
     {{/each}}
+    {{/if}}
 
     {{!-- Single Value Resources (canStoreValue) --}}
+    {{#if @root.settings.showDiceResources}}
     {{#each valueResources}}
     <div class="value-resource {{key}}-value" data-resource="{{key}}" data-die-size="{{dieSize}}" data-max="{{max}}" style="border-left: 3px solid {{color}};">
       <div class="value-header">
         <span class="resource-label">{{localize labelKey}}</span>
         <span class="value-info">
-          <span class="die-size-badge" style="background: {{color}};">{{dieSize}}</span>
-          <span class="value-max">max: {{max}}</span>
+          {{#each diceImages}}
+          <span class="die-size-icon die-icon-{{this}}" style="background: {{../color}};" title="{{this}}"></span>
+          {{/each}}
         </span>
       </div>
       <div class="value-display">
         <span class="die-slot">
-          <span class="single-value" data-action="editSingleValue" data-value="{{storedValue}}" style="--die-color: {{color}}; background: {{#if storedValue}}{{color}}{{else}}rgba(0,0,0,0.3){{/if}};">{{storedValue}}</span>
+          <span class="single-value" {{#if @root.settings.showDiceEdit}}data-action="editSingleValue"{{/if}} data-value="{{storedValue}}" style="--die-color: {{color}}; background: {{#if storedValue}}{{color}}{{else}}rgba(0,0,0,0.3){{/if}};">{{storedValue}}</span>
           {{#if storedValue}}
+          {{#if @root.settings.showDiceDelete}}
           <button class="die-delete" type="button" data-action="clearSingleValue" data-resource="{{key}}" title="{{localize 'NIMBLE_DM_HELPER.clearDice'}}"><i class="fas fa-times"></i></button>
+          {{/if}}
           {{/if}}
         </span>
         {{#if (or @root.settings.showRollButton @root.settings.showClearButton)}}
@@ -94,9 +106,11 @@
       </div>
     </div>
     {{/each}}
+    {{/if}}
 
 
     {{!-- Inline Resources (generic loop) --}}
+    {{#if @root.settings.showInlineResources}}
     {{#each inlineResources}}
     <div class="resource-inline">
       <span class="resource-label">{{localize labelKey}}</span>
@@ -111,6 +125,7 @@
       </div>
     </div>
     {{/each}}
+    {{/if}}
 
   <!-- Abilities Section -->
   {{#if @root.settings.showAbilities}}

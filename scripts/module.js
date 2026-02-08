@@ -1,11 +1,12 @@
 import { NimbleDMHelperApp } from './dm-helper-app.js';
-import { registerSettings } from './settings.js';
+import { registerSettings, registerSettingsGrouping } from './settings.js';
 import { registerHooks } from './hooks.js';
 import { MODULE_ID, MODULE_PATH } from './constants.js';
 
 Hooks.once('init', async () => {
   console.log(`${MODULE_ID} | Initializing Nimble DM Helper`);
   registerSettings();
+  registerSettingsGrouping();
   registerHandlebarsHelpers();
 
   // Precharger les templates partials

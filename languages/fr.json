@@ -73,6 +73,13 @@
 
     },
 
+    "settingsGroup": {
+      "general": "General",
+      "sections": "Sections visibles",
+      "bars": "Barres de ressources",
+      "dice": "Des et habiletes"
+    },
+
     "keybinding": {
       "toggle": "Afficher/Masquer l'Assistant MJ",
       "toggleHint": "Ouvre ou ferme la fenetre de l'Assistant MJ"
@@ -102,8 +109,10 @@
       "showRollButtonHint": "Affiche un bouton pour lancer et ajouter un dé dans les pools de dés",
       "showClearButton": "Bouton vider les dés",
       "showClearButtonHint": "Affiche un bouton pour vider tous les dés d'un pool",
-      "showDicePoolMax": "Afficher le max des pools de des",
-      "showDicePoolMaxHint": "Affiche le nombre maximum de des a cote des habiletes de type pool de des",
+      "showDiceEdit": "Édition des valeurs de dés",
+      "showDiceEditHint": "Permet de cliquer sur un dé pour modifier sa valeur dans les pools de dés et les valeurs stockées",
+      "showDiceDelete": "Bouton supprimer un dé",
+      "showDiceDeleteHint": "Affiche un bouton de suppression (X) sur chaque dé pour le détruire",
       "mergedBars": "Barres fusionnees",
       "mergedBarsHint": "Fusionne le libelle et la valeur avec la barre de ressource sur une seule ligne pour les PV et la Mana. Masque les PV temporaires.",
       "showBarControls": "Boutons +/- des barres",
@@ -112,6 +121,14 @@
       "woundsOnlyAtZeroHPHint": "N'affiche le suivi des blessures que lorsque le personnage est a 0 points de vie",
       "filterByPresence": "Filtrer par presence",
       "filterByPresenceHint": "N'affiche que les personnages des joueurs connectes qui les ont definis comme personnage principal",
+      "showInlineResources": "Afficher les habiletes",
+      "showInlineResourcesHint": "Affiche les compteurs de ressources en ligne (compteurs simples avec boutons +/-) sur les cartes de personnage",
+      "showDiceResources": "Afficher les des stockes",
+      "showDiceResourcesHint": "Affiche les pools de des et les valeurs stockees (Des de Fureur, Des de Jugement, etc.) sur les cartes de personnage",
+      "showHPMana": "Afficher PV, Blessures et Mana",
+      "showHPManaHint": "Affiche les barres de PV, le suivi des blessures et la barre de mana sur les cartes de personnage",
+      "showOtherBars": "Afficher les autres barres",
+      "showOtherBarsHint": "Affiche les autres barres de ressources (Imposition des mains, etc.) sur les cartes de personnage",
       "persistPinnedActors": "Sauvegarder les personnages epingles",
       "persistPinnedActorsHint": "Lorsque active, les personnages ajoutes par glisser-deposer sont sauvegardes entre les sessions. Sinon, ils ne sont conserves que pour la session en cours."
     }

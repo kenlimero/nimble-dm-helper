@@ -242,13 +242,18 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     data.settings = {
       showAbilities: game.settings.get(MODULE_ID, 'showAbilities'),
       showDeleteAbility: game.settings.get(MODULE_ID, 'showDeleteAbility'),
-      showDicePoolMax: game.settings.get(MODULE_ID, 'showDicePoolMax'),
       showRollButton: game.settings.get(MODULE_ID, 'showRollButton'),
       showClearButton: game.settings.get(MODULE_ID, 'showClearButton'),
+      showDiceEdit: game.settings.get(MODULE_ID, 'showDiceEdit'),
+      showDiceDelete: game.settings.get(MODULE_ID, 'showDiceDelete'),
       compactMode: game.settings.get(MODULE_ID, 'compactMode'),
       mergedBars: game.settings.get(MODULE_ID, 'mergedBars'),
       showBarControls: game.settings.get(MODULE_ID, 'showBarControls'),
-      woundsOnlyAtZeroHP: game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP')
+      woundsOnlyAtZeroHP: game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP'),
+      showInlineResources: game.settings.get(MODULE_ID, 'showInlineResources'),
+      showDiceResources: game.settings.get(MODULE_ID, 'showDiceResources'),
+      showHPMana: game.settings.get(MODULE_ID, 'showHPMana'),
+      showOtherBars: game.settings.get(MODULE_ID, 'showOtherBars')
     };
 
     data.isCompact = data.settings.compactMode;
@@ -298,7 +303,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const valueResources = [];
     const inlineResources = [];
     const hpBars = [];
-    const resourceBars = [];
+    const manaBars = [];
+    const otherResourceBars = [];
 
     // HP comme premiere barre (toujours presente)
     hpBars.push({
@@ -349,10 +355,11 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       if (value.canStoreDice) {
         dicePools.push(entry);
       } else if (value.canStoreValue) {
+        entry.diceImages = Array.from({ length: entry.max || 0 }, () => entry.dieSize);
         valueResources.push(entry);
       } else if (key === 'mana' && value.max) {
         // Mana comme barre avec support merged bars
-        resourceBars.push({
+        manaBars.push({
           key: 'mana',
           labelKey: 'NIMBLE_DM_HELPER.resources.mana',
           value: value.value,
@@ -368,7 +375,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         });
       } else if (value.displayType === 'bar') {
         // Autres bar resources (ex: Lay on Hands)
-        resourceBars.push({
+        otherResourceBars.push({
           ...entry,
           supportsMergedBars: true,
           controls: [
@@ -397,7 +404,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       level: level,
       resources: { ...resources, ...classResources },
       hpBars,
-      resourceBars,
+      manaBars,
+      otherResourceBars,
       dicePools,
       valueResources,
       inlineResources,
@@ -518,14 +526,16 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       if (!displayEl) return;
 
       const dieSize = poolEl.dataset.dieSize || 'd6';
+      const showEdit = context.settings.showDiceEdit;
+      const showDelete = context.settings.showDiceDelete;
       let slotsHtml = '';
       for (let i = 0; i < max; i++) {
         const value = values[i] ?? 0;
         const isEmpty = value === 0;
         const emptyClass = isEmpty ? 'empty' : '';
         slotsHtml += `<span class="die-slot" data-index="${i}">`;
-        slotsHtml += `<span class="die-value die-${dieSize} ${emptyClass}" data-action="editDieValue" data-index="${i}" data-value="${value}" data-actor-id="${actorId}" data-resource="${resourceKey}" style="--die-color: ${color}; background: ${isEmpty ? 'rgba(0,0,0,0.3)' : color};">${value}</span>`;
-        if (!isEmpty) {
+        slotsHtml += `<span class="die-value die-${dieSize} ${emptyClass}" ${showEdit ? `data-action="editDieValue"` : ''} data-index="${i}" data-value="${value}" data-actor-id="${actorId}" data-resource="${resourceKey}" style="--die-color: ${color}; background: ${isEmpty ? 'rgba(0,0,0,0.3)' : color};">${value}</span>`;
+        if (!isEmpty && showDelete) {
           slotsHtml += `<button class="die-delete" data-action="deleteDie" data-index="${i}" data-actor-id="${actorId}" data-resource="${resourceKey}" title="${game.i18n.localize('NIMBLE_DM_HELPER.clearDice')}"><i class="fas fa-times"></i></button>`;
         }
         slotsHtml += `</span>`;
@@ -548,7 +558,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       // Clic sur single-value pour editer (canStoreValue comme judgmentDice)
       html.addEventListener('click', (event) => {
         const el = event.target.closest('.single-value');
-        if (el) {
+        if (el && el.dataset.action === 'editSingleValue') {
           event.preventDefault();
           NimbleDMHelperApp._onEditSingleValue.call(this, event, el);
         }

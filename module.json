@@ -2,7 +2,7 @@
   "id": "nimble-dm-helper",
   "title": "Nimble DM Helper",
   "description": "A GM companion module for the Nimble RPG system. Provides a floating window to track PC resources and abilities at a glance.",
-  "version": "1.2.19",
+  "version": "1.3.0",
   "compatibility": {
     "minimum": "13",
     "verified": "13.351",

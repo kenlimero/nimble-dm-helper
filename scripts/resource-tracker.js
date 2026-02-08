@@ -309,7 +309,7 @@ export class ResourceTracker {
   async clearDice(actor, resourceKey) {
     const condition = this._getCondition(actor, resourceKey);
     const flagInfo = this._getFlagInfo(resourceKey, condition);
-    await actor.setFlag(flagInfo.module, flagInfo.key, []);
+    await actor.unsetFlag(flagInfo.module, flagInfo.key);
   }
 
   /**
@@ -426,19 +426,19 @@ export class ResourceTracker {
       if (condition.resetOn !== 'rest' && condition.resetOn !== restType) continue;
       if (condition.requiresFeature && !hasFeature(actor, condition.requiresFeature)) continue;
 
-      // Dice pools : vider le pool
+      // Dice pools : detruire les des (unsetFlag est plus fiable que setFlag([]) dans Foundry)
       if (condition.canStoreDice) {
         const flagInfo = this._getFlagInfo(key, condition);
-        await actor.setFlag(flagInfo.module, flagInfo.key, []);
+        await actor.unsetFlag(flagInfo.module, flagInfo.key);
         continue;
       }
 
-      // Single value (canStoreValue) : vider le pool et remettre la valeur a zero
+      // Single value (canStoreValue) : detruire les des et remettre la valeur a zero
       if (condition.canStoreValue) {
         const flagInfo = this._getFlagInfo(key, condition);
-        await actor.setFlag(flagInfo.module, flagInfo.key, []);
+        await actor.unsetFlag(flagInfo.module, flagInfo.key);
         const singleFlagInfo = this._getSingleValueFlagInfo(key, condition);
-        await actor.setFlag(singleFlagInfo.module, singleFlagInfo.key, 0);
+        await actor.unsetFlag(singleFlagInfo.module, singleFlagInfo.key);
         continue;
       }
 
