@@ -272,120 +272,41 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const classId = getActorClass(actor);
     const classConfig = CLASS_CONFIGS[classId] || {};
     const level = getActorLevel(actor);
+    const registry = this.resourceTracker.registry;
 
-    // Ressources communes
-    const hp = system.attributes?.hp || system.hp || { value: 0, max: 0 };
-    const wounds = system.attributes?.wounds || system.wounds || { value: 0, max: 6 };
-
-    const resources = {
-      hp: {
-        value: hp.value ?? 0,
-        max: hp.max ?? 0,
-        temp: hp.temp ?? 0,
-        color: this._getHPColor(hp)
-      },
-      wounds: {
-        value: wounds.value ?? 0,
-        max: wounds.max ?? 6
-      }
-    };
+    // Ressources systeme via leurs handlers
+    const hpData = registry.hp.compute(actor, 'hp', {}, {}, level);
+    const woundsData = registry.wounds.compute(actor, 'wounds', {}, {}, level);
+    const hpDisplay = registry.hp.toDisplayData('hp', hpData, {});
 
     // Ressources specifiques a la classe
     const classResources = await this.resourceTracker.getClassResources(
-      actor,
-      classId,
-      classConfig,
-      level
+      actor, classId, classConfig, level
     );
 
-    // Categoriser les ressources par type d'affichage
+    // Categoriser les ressources via toDisplayData
     const dicePools = [];
     const valueResources = [];
     const inlineResources = [];
-    const hpBars = [];
+    const hpBars = hpDisplay.data;
     const manaBars = [];
     const otherResourceBars = [];
-
-    // HP comme premiere barre (toujours presente)
-    hpBars.push({
-      key: 'hp',
-      label: 'HP',
-      value: resources.hp.value,
-      max: resources.hp.max,
-      temp: resources.hp.temp,
-      color: resources.hp.color,
-      supportsMergedBars: true,
-      controls: [
-        { delta: -5, label: '-5' },
-        { delta: -1, label: '-1' },
-        { delta: 1, label: '+1' },
-        { delta: 5, label: '+5' }
-      ]
-    });
-
-    // Temp HP comme barre juste apres HP (visible uniquement si > 0)
-    if (resources.hp.temp) {
-      hpBars.push({
-        key: 'tempHp',
-        label: 'Temp HP',
-        value: resources.hp.temp,
-        max: resources.hp.temp,
-        color: '#9C27B0',
-        hideMax: true,
-        supportsMergedBars: true,
-        controls: [
-          { delta: -5, label: '-5' },
-          { delta: -1, label: '-1' },
-          { delta: 1, label: '+1' },
-          { delta: 5, label: '+5' }
-        ]
-      });
-    }
-
-    // Appliquer le degrade de couleur dynamique a la mana
-    if (classResources.mana) {
-      classResources.mana.color = this._getManaColor(classResources.mana);
-    }
+    const conditions = classConfig.resourceConditions || {};
 
     for (const [key, value] of Object.entries(classResources)) {
       if (!value || typeof value !== 'object') continue;
 
-      const entry = { key, labelKey: `NIMBLE_DM_HELPER.resources.${key}`, ...value };
+      const condition = conditions[key] || {};
+      const handler = registry.getHandler(key, condition);
+      const display = handler.toDisplayData(key, value, condition);
 
-      if (value.canStoreDice) {
-        dicePools.push(entry);
-      } else if (value.canStoreValue) {
-        entry.diceImages = Array.from({ length: entry.max || 0 }, () => entry.dieSize);
-        valueResources.push(entry);
-      } else if (key === 'mana' && value.max) {
-        // Mana comme barre avec support merged bars
-        manaBars.push({
-          key: 'mana',
-          labelKey: 'NIMBLE_DM_HELPER.resources.mana',
-          value: value.value,
-          max: value.max,
-          formula: value.formula,
-          color: value.color,
-          supportsMergedBars: true,
-          controls: [
-            { delta: -1, label: '-1' },
-            { delta: 1, label: '+1' },
-            { delta: 5, label: '+5' }
-          ]
-        });
-      } else if (value.displayType === 'bar') {
-        // Autres bar resources (ex: Lay on Hands)
-        otherResourceBars.push({
-          ...entry,
-          supportsMergedBars: true,
-          controls: [
-            { delta: -5, label: '-5' },
-            { delta: -1, label: '-1' },
-            { delta: 1, label: '+1' }
-          ]
-        });
-      } else if (value.displayType === 'inline') {
-        inlineResources.push(entry);
+      switch (display.category) {
+        case 'dicePool':      dicePools.push(display.data); break;
+        case 'valueResource': valueResources.push(display.data); break;
+        case 'manaBar':       manaBars.push(display.data); break;
+        case 'otherBar':      otherResourceBars.push(display.data); break;
+        case 'inline':        inlineResources.push(display.data); break;
+        // 'none' -> skip (statusEffect, special)
       }
     }
 
@@ -393,7 +314,10 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const abilities = this._getActorFeatures(actor, level);
 
     // Conditions actives
-    const conditions = this._getConditions(actor);
+    const activeConditions = this._getConditions(actor);
+
+    const hp = system.attributes?.hp || system.hp || { value: 0, max: 0 };
+    const wounds = system.attributes?.wounds || system.wounds || { value: 0, max: 6 };
 
     return {
       id: actor.id,
@@ -401,8 +325,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       img: actor.img,
       class: classId,
       className: classConfig.name || this._formatClassName(classId),
-      level: level,
-      resources: { ...resources, ...classResources },
+      level,
+      resources: { hp: hpData, wounds: woundsData, ...classResources },
       hpBars,
       manaBars,
       otherResourceBars,
@@ -410,7 +334,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       valueResources,
       inlineResources,
       abilities,
-      conditions,
+      conditions: activeConditions,
       hasClassResources: Object.keys(classResources).length > 0,
       showWounds: !game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP') || (hp.value ?? 0) === 0 || (wounds.value ?? 0) > 0
     };
@@ -422,28 +346,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   _formatClassName(classId) {
     if (!classId || classId === 'unknown') return 'Unknown';
     return classId.charAt(0).toUpperCase() + classId.slice(1).replace(/([A-Z])/g, ' $1');
-  }
-
-  /**
-   * Calcule la couleur de la barre HP
-   */
-  _getHPColor(hp) {
-    if (!hp.max || hp.max === 0) return '#4CAF50';
-    const ratio = hp.value / hp.max;
-    if (ratio > 0.5) return '#4CAF50';      // Vert
-    if (ratio > 0.25) return '#FFC107';     // Orange
-    return '#F44336';                        // Rouge
-  }
-
-  /**
-   * Calcule la couleur de la barre de mana
-   */
-  _getManaColor(mana) {
-    if (!mana.max || mana.max === 0) return '#2196F3';
-    const ratio = mana.value / mana.max;
-    if (ratio > 0.5) return '#2196F3';      // Bleu
-    if (ratio > 0.25) return '#7B1FA2';     // Violet
-    return '#4A148C';                        // Violet fonce
   }
 
   /**
@@ -815,41 +717,31 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const resourceTracker = this.resourceTracker;
     if (!resourceTracker) return;
 
-    const actors = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
-    for (const actor of actors) {
+    const registry = resourceTracker.registry;
+    // Inclure les personnages joueurs ET les acteurs epingles (drag & drop)
+    const playerCharacters = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
+    const pinnedIds = this._getPinnedActorIds();
+    const allIds = new Set(playerCharacters.map(a => a.id));
+    for (const id of pinnedIds) {
+      if (!allIds.has(id)) {
+        const pinned = game.actors.get(id);
+        if (pinned) playerCharacters.push(pinned);
+      }
+    }
+    for (const actor of playerCharacters) {
       // Safe Rest : restaurer HP, mana, temp HP et guerir 1 wound
       if (restType === 'safeRest') {
-        const system = actor.system;
-        const hp = system.attributes?.hp || system.hp || { value: 0, max: 0 };
-        const basePath = system.attributes?.hp ? 'system.attributes.hp' : 'system.hp';
+        await registry.hp.resetOnSafeRest(actor);
 
-        await actor.update({
-          [`${basePath}.value`]: hp.max || 0,
-          [`${basePath}.temp`]: 0
-        });
-
-        const mana = system.resources?.mana;
-        if (mana && mana.max > 0) {
-          // Mana geree par le systeme Nimble
-          await actor.update({
-            'system.resources.mana.value': mana.max,
-            'system.resources.mana.current': mana.max
-          });
-        } else {
-          // Mana geree par le module (fallback) : remettre au max
-          const classId = getActorClass(actor);
-          const config = CLASS_CONFIGS[classId];
-          const manaCondition = config?.resourceConditions?.mana;
-          if (manaCondition?.type === 'mana' && manaCondition.maxStat) {
-            await actor.unsetFlag(MODULE_ID, 'manaValue');
-          }
+        // Mana : delegation au handler avec la condition de classe
+        const classId = getActorClass(actor);
+        const config = CLASS_CONFIGS[classId];
+        const manaCondition = config?.resourceConditions?.mana;
+        if (manaCondition?.type === 'mana') {
+          await registry.mana.resetOnSafeRest(actor, manaCondition);
         }
 
-        const wounds = system.attributes?.wounds || system.wounds || { value: 0 };
-        const woundPath = system.attributes?.wounds ? 'system.attributes.wounds.value' : 'system.wounds.value';
-        if (wounds.value > 0) {
-          await actor.update({ [woundPath]: wounds.value - 1 });
-        }
+        await registry.wounds.resetOnSafeRest(actor);
 
         // Reset hit dice to max
         if (actor.HitDiceManager) {

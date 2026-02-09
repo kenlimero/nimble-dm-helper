@@ -1,0 +1,11 @@
+export { BaseResource, computeMax, getDieSizeFromProgression, getMaxFromProgression, resolveModule, getFlagInfo, getSingleValueFlagInfo } from './base-resource.js';
+export { SimpleValueResource } from './simple-value-resource.js';
+export { DicePoolResource } from './dice-pool-resource.js';
+export { SingleValueResource } from './single-value-resource.js';
+export { ManaResource } from './mana-resource.js';
+export { StatusEffectResource } from './status-effect-resource.js';
+export { SpecialResource } from './special-resource.js';
+export { HpResource } from './hp-resource.js';
+export { TempHpResource } from './temp-hp-resource.js';
+export { WoundsResource } from './wounds-resource.js';
+export { ResourceRegistry } from './resource-registry.js';
