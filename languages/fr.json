@@ -23,9 +23,7 @@
       "wounds": "Blessures",
       "mana": "Mana",
       "fury": "Dés de Fureur",
-      "furyDice": "Dés de Fureur",
       "oneWithTheAncients": "Un avec les Anciens",
-      "sneakAttack": "Attaque Sournoise",
       "cheat": "Triche!",
       "quickReadEnc": "Lecture Rapide de l'Ennemi",
       "quickReadDay": "Lecture Rapide du Monde",
@@ -87,11 +85,9 @@
 
     "notifications": {
       "dicePoolFull": "Le pool de dés est plein!",
-      "safeRestReset": "Safe Rest : les ressources de {name} ont été réinitialisées",
       "restReset": "Les ressources de {name} ont été réinitialisées",
       "newDayReset": "Nouveau Jour : les habiletés quotidiennes ont été réinitialisées",
-      "safeRestAllReset": "Safe Rest : les habiletés de repos ont été réinitialisées pour tous les personnages",
-      "dropNotCharacter": "Seuls les personnages joueurs peuvent etre deposes ici"
+      "safeRestAllReset": "Safe Rest : les habiletés de repos ont été réinitialisées pour tous les personnages"
     },
 
     "settings": {

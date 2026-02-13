@@ -11,6 +11,7 @@ export const stormshifterConfig = {
       requiresFeature: 'Beastshift',
       displayType: 'inline',
       maxStat: 'dex',
+      resetOn: 'safeRest',
       maxLevelBonus: [
         { level: 6, bonus: 1 },
         { level: 12, bonus: 1 }

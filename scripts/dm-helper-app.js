@@ -316,9 +316,6 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     // Conditions actives
     const activeConditions = this._getConditions(actor);
 
-    const hp = system.attributes?.hp || system.hp || { value: 0, max: 0 };
-    const wounds = system.attributes?.wounds || system.wounds || { value: 0, max: 6 };
-
     return {
       id: actor.id,
       name: actor.name,
@@ -336,7 +333,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       abilities,
       conditions: activeConditions,
       hasClassResources: Object.keys(classResources).length > 0,
-      showWounds: !game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP') || (hp.value ?? 0) === 0 || (wounds.value ?? 0) > 0
+      showWounds: !game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP') || (hpData.value ?? 0) === 0 || (woundsData.value ?? 0) > 0
     };
   }
 
@@ -564,7 +561,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const dieSize = dicePool?.dataset?.dieSize || 'd6';
     const maxValue = parseInt(dieSize.replace('d', '')) || 6;
 
-    const newValue = await this._promptForDieValue(currentValue, maxValue);
+    const title = game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resourceKey}`) || resourceKey;
+    const newValue = await this._promptForNumericInput(title, currentValue, maxValue);
     if (newValue !== null) {
       await this.resourceTracker.setDieValue(actor, resourceKey, index, newValue);
     }
@@ -616,13 +614,19 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   /**
-   * Prompt pour nouvelle valeur de de
+   * Prompt generique pour saisir une valeur numerique avec support du calcul (+/-)
+   * @param {string} title - Titre du dialogue
+   * @param {number} currentValue - Valeur actuelle affichee dans l'input
+   * @param {number|null} maxValue - Valeur max pour le clamp (null = pas de max)
+   * @returns {number|null} - La nouvelle valeur ou null si annule
    */
-  async _promptForDieValue(currentValue, maxValue) {
+  async _promptForNumericInput(title, currentValue, maxValue = null) {
+    const hint = maxValue != null
+      ? `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">0-${maxValue} (calcul: +/-)</div>`
+      : `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">Calcul: +/-</div>`;
     const result = await foundry.applications.api.DialogV2.prompt({
-      window: { title: 'Valeur du dé' },
-      content: `<input type="text" name="value" value="${currentValue}" style="width: 100%">
-        <div style="font-size: 0.85em; color: #888; margin-top: 4px;">0-${maxValue} (calcul: +/-)</div>`,
+      window: { title },
+      content: `<input type="text" name="value" value="${currentValue}" style="width: 100%">${hint}`,
       ok: {
         label: 'OK',
         callback: (event, button) => {
@@ -635,7 +639,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (result === null) return null;
     const evaluated = this._evaluateExpression(result, currentValue);
     if (evaluated === null) return null;
-    return Math.clamp(evaluated, 0, maxValue);
+    return maxValue != null ? Math.clamp(evaluated, 0, maxValue) : Math.max(0, evaluated);
   }
 
   /**
@@ -883,38 +887,12 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const maxDieValue = parseInt(dieSize.replace('d', '')) || 6;
     const maxValue = maxDice * maxDieValue;
 
-    const newValue = await this._promptForSingleValue(resource, currentValue, maxValue);
+    const title = game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resource}`) || resource;
+    const newValue = await this._promptForNumericInput(title, currentValue, maxValue);
 
     if (newValue !== null && newValue !== currentValue) {
       await this.resourceTracker.setSingleValue(actor, resource, newValue);
     }
-  }
-
-  /**
-   * Prompt pour nouvelle valeur unique
-   */
-  async _promptForSingleValue(resource, currentValue, maxValue = null) {
-    const title = game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resource}`) || resource;
-    const maxHint = maxValue
-      ? `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">0-${maxValue} (calcul: +/-)</div>`
-      : `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">Calcul: +/-</div>`;
-    const result = await foundry.applications.api.DialogV2.prompt({
-      window: { title },
-      content: `<input type="text" name="value" value="${currentValue}" style="width: 100%">${maxHint}`,
-      ok: {
-        label: 'OK',
-        callback: (event, button) => {
-          const form = button.form ?? event.target.closest('form');
-          const input = form?.querySelector('input[name="value"]');
-          return input?.value;
-        }
-      }
-    });
-    if (result === null) return null;
-    const evaluated = this._evaluateExpression(result, currentValue);
-    if (evaluated === null) return null;
-    const clamped = maxValue ? Math.clamp(evaluated, 0, maxValue) : Math.max(0, evaluated);
-    return clamped;
   }
 
   /**
@@ -935,7 +913,8 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
     const currentValue = parseInt(el.textContent) || 0;
     this._dialogOpen = true;
     try {
-      const newValue = await this._promptForValue(resource, currentValue);
+      const title = game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resource}`) || resource;
+      const newValue = await this._promptForNumericInput(title, currentValue);
       if (newValue !== null && newValue !== currentValue) {
         const delta = newValue - currentValue;
         await this.resourceTracker.adjustResource(actor, resource, delta);
@@ -946,31 +925,10 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   /**
-   * Prompt pour nouvelle valeur
-   */
-  async _promptForValue(resource, currentValue) {
-    const title = game.i18n.localize(`NIMBLE_DM_HELPER.resources.${resource}`) || resource;
-    const result = await foundry.applications.api.DialogV2.prompt({
-      window: { title },
-      content: `<input type="text" name="value" value="${currentValue}" style="width: 100%">
-        <div style="font-size: 0.85em; color: #888; margin-top: 4px;">Calcul: +/-</div>`,
-      ok: {
-        label: 'OK',
-        callback: (event, button) => {
-          const form = button.form ?? event.target.closest('form');
-          const input = form?.querySelector('input[name="value"]');
-          return input?.value;
-        }
-      }
-    });
-    if (result === null) return null;
-    return this._evaluateExpression(result, currentValue);
-  }
-
-  /**
    * Nettoie le tooltip global a la fermeture de l'app
    */
   async close(options = {}) {
+    this._delegatedListenersAttached = false;
     const tooltip = document.getElementById('ndh-ability-tooltip');
     if (tooltip) tooltip.remove();
     return super.close(options);

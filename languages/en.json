@@ -23,9 +23,7 @@
       "wounds": "Wounds",
       "mana": "Mana",
       "fury": "Fury Dice",
-      "furyDice": "Fury Dice",
       "oneWithTheAncients": "One with the Ancients",
-      "sneakAttack": "Sneak Attack",
       "cheat": "Cheat!",
       "quickReadEnc": "Quick Read Ennemi",
       "quickReadDay": "Quick Read Exam.",
@@ -86,11 +84,9 @@
 
     "notifications": {
       "dicePoolFull": "Dice pool is full!",
-      "safeRestReset": "Safe Rest: {name}'s resources have been reset",
       "restReset": "{name}'s resources have been reset",
       "newDayReset": "New Day: daily abilities have been reset",
-      "safeRestAllReset": "Safe Rest: rest abilities have been reset for all characters",
-      "dropNotCharacter": "Only player characters can be dropped here"
+      "safeRestAllReset": "Safe Rest: rest abilities have been reset for all characters"
     },
 
     "settings": {

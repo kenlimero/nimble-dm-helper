@@ -20,9 +20,6 @@
   --ndh-hp-low: hsl(1, 75%, 50%);             /* Rouge danger */
   --ndh-mana: #2680d9;                        /* Bleu mana (Nimble) */
   --ndh-temp-hp: #9C27B0;
-  --ndh-fury: #bf4040;                        /* Rouge fureur (Nimble) */
-  --ndh-judgment: #cca633;                    /* Or jugement (Nimble) */
-  --ndh-combat: #9f9175;                      /* Marron-gris combat (Nimble) */
 }
 
 /* Window styling */
@@ -221,12 +218,6 @@
   border-radius: 4px;
 }
 
-.hp-bar {
-}
-
-.mana-bar {
-}
-
 .temp-hp-indicator {
   position: absolute;
   top: 0;
@@ -379,16 +370,6 @@
   gap: 6px;
 }
 
-.die-size-badge {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: white;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-}
-
 .die-size-icon {
   display: inline-block;
   width: 20px;
@@ -431,24 +412,12 @@
   mask-image: url('../assets/dices/d20.svg');
 }
 
-.dice-count {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.75rem;
-  color: var(--ndh-text-muted);
-}
-
 .dice-display {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
   min-height: 28px;
   align-items: center;
-}
-
-.dice-empty {
-  color: var(--ndh-text-muted);
-  font-size: 0.8rem;
-  font-style: italic;
 }
 
 .dice-controls {
@@ -515,14 +484,6 @@
 }
 
 .die-value {
-  cursor: pointer;
-}
-
-.die-value:active {
-  transform: scale(0.9);
-}
-
-.die-value {
   width: 28px;
   height: 28px;
   display: flex;
@@ -536,6 +497,11 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
   position: relative;
+  cursor: pointer;
+}
+
+.die-value:active {
+  transform: scale(0.9);
 }
 
 .die-value:hover {
@@ -550,22 +516,6 @@
 
 .die-value.empty:hover {
   color: var(--ndh-text);
-}
-
-/* Legacy support for class-based colors */
-.die-value.fury {
-  background: var(--ndh-fury);
-}
-
-.die-value.judgment {
-  background: var(--ndh-judgment);
-  color: #000;
-  text-shadow: none;
-}
-
-.die-value.combatDice,
-.die-value.combat {
-  background: var(--ndh-combat);
 }
 
 /* ============================================
@@ -719,12 +669,6 @@
   gap: 8px;
 }
 
-.value-max {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--ndh-text-muted);
-}
-
 .value-display {
   display: flex;
   justify-content: center;
@@ -792,8 +736,6 @@
   z-index: -1;
 }
 
-/* (Die shapes for single-value are now merged with .die-value selectors above) */
-
 /* Single-value empty state for shaped dice */
 .value-resource:not([data-die-size="d6"]) .single-value[data-value="0"]::before,
 .value-resource:not([data-die-size="d6"]) .single-value[data-value=""]::before {
@@ -803,56 +745,6 @@
 .value-resource:not([data-die-size="d6"]) .single-value[data-value="0"]:hover::before,
 .value-resource:not([data-die-size="d6"]) .single-value[data-value=""]:hover::before {
   background: rgba(255, 255, 255, 0.2);
-}
-
-/* Status badges */
-.status-badge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.65rem;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.status-badge.rage {
-  background: var(--ndh-fury);
-  color: white;
-  animation: pulse 1s infinite;
-}
-
-.status-badge.available {
-  background: var(--ndh-hp-full);
-  color: white;
-}
-
-.status-badge.used {
-  background: var(--ndh-secondary);
-  color: var(--ndh-text-muted);
-}
-
-/* Mark indicator */
-.mark-indicator {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  background: rgba(76, 175, 80, 0.2);
-  border-radius: 4px;
-  font-size: 0.75rem;
-  color: var(--ndh-hp-full);
-}
-
-.mark-indicator i {
-  color: var(--ndh-hp-full);
-}
-
-/* Die size indicator */
-.die-size {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.8rem;
-  padding: 2px 6px;
-  background: var(--ndh-secondary);
-  border-radius: 3px;
 }
 
 /* Abilities */

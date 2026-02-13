@@ -246,14 +246,6 @@ export function registerSettings() {
     type: Array,
     default: []
   });
-
-  // Position sauvegardee
-  game.settings.register(MODULE_ID, 'windowPosition', {
-    scope: 'client',
-    config: false,
-    type: Object,
-    default: { top: 100, left: 100 }
-  });
 }
 
 /**
