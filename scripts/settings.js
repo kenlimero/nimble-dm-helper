@@ -145,6 +145,39 @@ export function registerSettings() {
     onChange: () => game.nimbleDMHelper?.app?.render()
   });
 
+  // Afficher les icones des habiletes sur les ressources inline
+  game.settings.register(MODULE_ID, 'showInlineIcons', {
+    name: 'NIMBLE_DM_HELPER.settings.showInlineIcons',
+    hint: 'NIMBLE_DM_HELPER.settings.showInlineIconsHint',
+    scope: 'client',
+    config: hasAccess,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
+  // Afficher les boutons +/- sur les ressources inline
+  game.settings.register(MODULE_ID, 'showInlineControls', {
+    name: 'NIMBLE_DM_HELPER.settings.showInlineControls',
+    hint: 'NIMBLE_DM_HELPER.settings.showInlineControlsHint',
+    scope: 'client',
+    config: hasAccess,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
+  // Afficher la description au survol des ressources inline
+  game.settings.register(MODULE_ID, 'showInlineTooltip', {
+    name: 'NIMBLE_DM_HELPER.settings.showInlineTooltip',
+    hint: 'NIMBLE_DM_HELPER.settings.showInlineTooltipHint',
+    scope: 'client',
+    config: hasAccess,
+    type: Boolean,
+    default: true,
+    onChange: () => game.nimbleDMHelper?.app?.render()
+  });
+
   // Afficher section abilites
   game.settings.register(MODULE_ID, 'showAbilities', {
     name: 'NIMBLE_DM_HELPER.settings.showAbilities',

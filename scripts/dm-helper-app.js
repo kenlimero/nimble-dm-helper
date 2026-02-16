@@ -251,6 +251,9 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       showBarControls: game.settings.get(MODULE_ID, 'showBarControls'),
       woundsOnlyAtZeroHP: game.settings.get(MODULE_ID, 'woundsOnlyAtZeroHP'),
       showInlineResources: game.settings.get(MODULE_ID, 'showInlineResources'),
+      showInlineIcons: game.settings.get(MODULE_ID, 'showInlineIcons'),
+      showInlineControls: game.settings.get(MODULE_ID, 'showInlineControls'),
+      showInlineTooltip: game.settings.get(MODULE_ID, 'showInlineTooltip'),
       showDiceResources: game.settings.get(MODULE_ID, 'showDiceResources'),
       showHPMana: game.settings.get(MODULE_ID, 'showHPMana'),
       showOtherBars: game.settings.get(MODULE_ID, 'showOtherBars')
@@ -305,7 +308,20 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         case 'valueResource': valueResources.push(display.data); break;
         case 'manaBar':       manaBars.push(display.data); break;
         case 'otherBar':      otherResourceBars.push(display.data); break;
-        case 'inline':        inlineResources.push(display.data); break;
+        case 'inline': {
+          if (condition.requiresFeature) {
+            const feature = actor.items.find(i => i.type === 'feature' && i.name === condition.requiresFeature);
+            if (feature) {
+              display.data.featureIcon = feature.img;
+              const rawDesc = feature.system?.description?.value ?? feature.system?.description ?? '';
+              display.data.featureDescription = rawDesc
+                .replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, '<strong>$1</strong>')
+                .replace(/\[\[\/r\s+([^\]]*)\]\]/g, '$1');
+            }
+          }
+          inlineResources.push(display.data);
+          break;
+        }
         // 'none' -> skip (statusEffect, special)
       }
     }
@@ -378,7 +394,7 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
       .map(e => ({
         id: e.id,
         name: e.name || e.label,
-        icon: e.icon || e.img
+        icon: e.img
       }));
   }
 
@@ -469,14 +485,14 @@ export class NimbleDMHelperApp extends HandlebarsApplicationMixin(ApplicationV2)
         if (el) this._onEditValue({ currentTarget: el });
       });
 
-      // Hover sur abilite = tooltip HTML custom
+      // Hover sur abilite ou ressource inline = tooltip HTML custom
       html.addEventListener('mouseover', (event) => {
-        const el = event.target.closest('.ability-item');
+        const el = event.target.closest('.ability-item') || event.target.closest('.resource-inline');
         if (el && el.dataset.description) this._showAbilityTooltip(el);
       });
 
       html.addEventListener('mouseout', (event) => {
-        const el = event.target.closest('.ability-item');
+        const el = event.target.closest('.ability-item') || event.target.closest('.resource-inline');
         if (el && !el.contains(event.relatedTarget)) {
           this._hideAbilityTooltip();
         }

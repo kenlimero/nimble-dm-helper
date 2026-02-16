@@ -112,17 +112,22 @@
     {{!-- Inline Resources (generic loop) --}}
     {{#if @root.settings.showInlineResources}}
     {{#each inlineResources}}
-    <div class="resource-inline">
+    <div class="resource-inline" {{#if @root.settings.showInlineTooltip}}{{#if featureDescription}}data-description="{{featureDescription}}"{{/if}}{{/if}}>
+      {{#if @root.settings.showInlineIcons}}
+      {{#if featureIcon}}<img src="{{featureIcon}}" class="inline-resource-icon">{{/if}}
+      {{/if}}
       <span class="resource-label">{{localize labelKey}}</span>
       {{#if max}}
       <span class="resource-value">{{value}}/{{max}}</span>
       {{else}}
       <span class="resource-value">{{value}}</span>
       {{/if}}
+      {{#if @root.settings.showInlineControls}}
       <div class="resource-controls">
         <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="{{key}}" data-delta="-1">-</button>
         <button class="resource-adjust" type="button" data-action="adjustResource" data-resource="{{key}}" data-delta="1">+</button>
       </div>
+      {{/if}}
     </div>
     {{/each}}
     {{/if}}

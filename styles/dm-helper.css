@@ -283,6 +283,13 @@
   flex-wrap: wrap;
 }
 
+.inline-resource-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
 .resource-inline .resource-label {
   font-size: 0.75rem;
   flex-shrink: 0;
