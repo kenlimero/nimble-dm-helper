@@ -129,6 +129,150 @@ A Foundry VTT module for the **Nimble RPG** system. Provides a floating GM windo
 | Wounds at Zero HP | Only show wounds at 0 HP | Client |
 | Filter by Presence | Show only connected players' characters | Client (GM) |
 
+### Customizing Class Configurations
+
+Class configuration files are located in [scripts/class-configs/](scripts/class-configs/). Each file exports an object that describes the resources tracked for a specific class.
+
+#### File Structure
+
+```js
+export const myClassConfig = {
+  name: 'Class Name',           // Display name in the UI
+  icon: 'path/to/icon.webp',   // Foundry VTT icon path
+  resourceConditions: {
+    resourceKey: {
+      requiresFeature: 'Feature Name', // Foundry feature that unlocks this resource
+      // ... resource-specific properties (see types below)
+    }
+  }
+};
+```
+
+To register a new config, import it in [scripts/class-configs/index.js](scripts/class-configs/index.js) and add it to `CLASS_CONFIGS`. The key must match the actor's class identifier in the Nimble system.
+
+#### Resource Types
+
+**Dice Pool** — `canStoreDice: true`
+
+A collection of individual dice with separate values. Used for class dice pools such as Fury Dice or Combat Dice.
+
+```js
+furyDice: {
+  requiresFeature: 'Rage',
+  canStoreDice: true,
+  color: '#DC143C',
+  maxStat: 'str',
+  resetOn: 'combatEnd',
+  storageModule: 'system',
+  storageKey: 'furyDice',
+  dieProgression: [
+    { level: 1, dieSize: 'd4' },
+    { level: 6, dieSize: 'd6' }
+  ]
+}
+```
+
+**Single Value** — `canStoreValue: true`
+
+Stores a single numeric value rolled from dice. Can be combined with `canStoreDice` to allow both modes.
+
+```js
+judgmentDice: {
+  canStoreValue: true,
+  canStoreDice: true,
+  storageKey: 'judgmentDice',
+  singleValueKey: 'judgmentValue',
+  maxProgression: [{ level: 1, max: 2 }],
+  dieProgression: [{ level: 1, dieSize: 'd6' }],
+  resetOn: 'combatEnd'
+}
+```
+
+**Bar** — `displayType: 'bar'`
+
+A progress bar showing current vs. maximum value. Suitable for pool-like resources such as Lay on Hands.
+
+```js
+layOnHands: {
+  requiresFeature: 'Lay on Hands',
+  displayType: 'bar',
+  color: '#FFD700',
+  maxLevelMultiplier: 5,
+  defaultToMax: true,
+  resetOn: 'safeRest'
+}
+```
+
+**Inline** — `displayType: 'inline'`
+
+A compact counter displayed inline with the resource label. The most common type, used for most class abilities.
+
+```js
+burstOfSpeed: {
+  requiresFeature: 'Burst of Speed',
+  displayType: 'inline',
+  maxStat: 'dex',
+  resetOn: 'combatEnd',
+  defaultToMax: true
+}
+```
+
+**Mana** — `type: 'mana'`
+
+A special type that plugs into the existing mana bar display. Requires a `formula` property using stat names and arithmetic.
+
+```js
+mana: {
+  requiresFeature: 'Mana and Unlock Tier 1 Spells',
+  type: 'mana',
+  formula: 'INT × 3 + LVL'
+}
+```
+
+Supported variables in formulas: `STR`, `DEX`, `INT`, `WIL`, `LVL`.
+
+#### Common Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `requiresFeature` | string | Name of the Foundry feature the actor must have. Omit to always show the resource. |
+| `color` | string | CSS color string for the resource display |
+| `defaultToMax` | boolean | Start the resource at its maximum value |
+| `defaultValue` | number | Default value when not using `defaultToMax` |
+| `resetOn` | string | When the resource resets — see values below |
+
+Reset values for `resetOn`:
+
+| Value | Trigger |
+|-------|---------|
+| `'combatEnd'` | When combat ends |
+| `'safeRest'` | On safe rest |
+| `'fieldRest'` | On field rest |
+| `'newDay'` | At the start of a new day |
+| `'encounterStart'` | At the start of combat |
+| `'round'` | At the start of each round |
+
+#### Maximum Calculation Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `maxStat` | string | Stat used as base for max: `'str'`, `'dex'`, `'int'`, `'wil'` |
+| `maxMultiplier` | number | Multiplier applied to the stat value |
+| `maxLevelMultiplier` | number | Multiplier applied to character level |
+| `maxProgression` | array | `[{ level, max }]` — overrides the max at specific levels |
+| `maxLevelBonus` | array | `[{ level, bonus }]` — adds a cumulative bonus to the max at specific levels |
+
+#### Dice Pool Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `dieProgression` | array | `[{ level, dieSize }]` — sets die size at specific levels (e.g. `'d4'`, `'d6'`, `'d8'`, `'d10'`, `'d12'`, `'d20'`) |
+| `storageModule` | string | Module ID used for persistent actor flag storage (usually `'system'`) |
+| `storageKey` | string | Flag key for storing the dice array |
+| `singleValueKey` | string | Flag key for storing the combined single value alongside dice |
+
+---
+
 ### License
 
 MIT License
@@ -255,6 +399,150 @@ MIT License
 | Barres fusionnees | Combine le libelle et la valeur sur les barres | Client |
 | Blessures a 0 PV | N'affiche les blessures qu'a 0 PV | Client |
 | Filtrer par presence | N'affiche que les personnages des joueurs connectes | Client (MJ) |
+
+### Personnalisation des configurations de classe
+
+Les fichiers de configuration de classe se trouvent dans [scripts/class-configs/](scripts/class-configs/). Chaque fichier exporte un objet qui decrit les ressources suivies pour une classe specifique.
+
+#### Structure d'un fichier
+
+```js
+export const maClasseConfig = {
+  name: 'Nom de la classe',     // Nom affiche dans l'interface
+  icon: 'chemin/vers/icon.webp',// Chemin vers l'icone Foundry VTT
+  resourceConditions: {
+    cleRessource: {
+      requiresFeature: 'Nom de la Feature', // Feature Foundry qui debloque cette ressource
+      // ... proprietes specifiques au type (voir ci-dessous)
+    }
+  }
+};
+```
+
+Pour enregistrer une nouvelle config, il faut l'importer dans [scripts/class-configs/index.js](scripts/class-configs/index.js) et l'ajouter a `CLASS_CONFIGS`. La cle doit correspondre a l'identifiant de classe de l'acteur dans le systeme Nimble.
+
+#### Types de ressources
+
+**Pool de des** — `canStoreDice: true`
+
+Une collection de des individuels avec leurs valeurs separees. Utilise pour les pools de des de classe comme les Des de Fureur ou les Des de Combat.
+
+```js
+desFureur: {
+  requiresFeature: 'Rage',
+  canStoreDice: true,
+  color: '#DC143C',
+  maxStat: 'str',
+  resetOn: 'combatEnd',
+  storageModule: 'system',
+  storageKey: 'furyDice',
+  dieProgression: [
+    { level: 1, dieSize: 'd4' },
+    { level: 6, dieSize: 'd6' }
+  ]
+}
+```
+
+**Valeur unique** — `canStoreValue: true`
+
+Stocke une valeur numerique unique issue d'un lancer de de. Peut se combiner avec `canStoreDice` pour autoriser les deux modes.
+
+```js
+desJugement: {
+  canStoreValue: true,
+  canStoreDice: true,
+  storageKey: 'judgmentDice',
+  singleValueKey: 'judgmentValue',
+  maxProgression: [{ level: 1, max: 2 }],
+  dieProgression: [{ level: 1, dieSize: 'd6' }],
+  resetOn: 'combatEnd'
+}
+```
+
+**Barre** — `displayType: 'bar'`
+
+Une barre de progression affichant la valeur courante par rapport au maximum. Adaptee aux ressources de type jauge comme l'Imposition des mains.
+
+```js
+impositionDesMains: {
+  requiresFeature: 'Lay on Hands',
+  displayType: 'bar',
+  color: '#FFD700',
+  maxLevelMultiplier: 5,
+  defaultToMax: true,
+  resetOn: 'safeRest'
+}
+```
+
+**Inline** — `displayType: 'inline'`
+
+Un compteur compact affiche en ligne avec le nom de la ressource. Le type le plus courant, utilise pour la plupart des capacites de classe.
+
+```js
+explosionDeVitesse: {
+  requiresFeature: 'Burst of Speed',
+  displayType: 'inline',
+  maxStat: 'dex',
+  resetOn: 'combatEnd',
+  defaultToMax: true
+}
+```
+
+**Mana** — `type: 'mana'`
+
+Type special qui s'integre a la barre de mana existante. Necessite une propriete `formula` utilisant les noms de statistiques et des operations arithmetiques.
+
+```js
+mana: {
+  requiresFeature: 'Mana and Unlock Tier 1 Spells',
+  type: 'mana',
+  formula: 'INT × 3 + LVL'
+}
+```
+
+Variables disponibles dans les formules : `STR`, `DEX`, `INT`, `WIL`, `LVL`.
+
+#### Proprietes communes
+
+| Propriete | Type | Description |
+|-----------|------|-------------|
+| `requiresFeature` | string | Nom de la feature Foundry que l'acteur doit posseder. Absent = toujours affiche. |
+| `color` | string | Couleur CSS pour l'affichage de la ressource |
+| `defaultToMax` | boolean | Demarre la ressource a sa valeur maximum |
+| `defaultValue` | number | Valeur par defaut si `defaultToMax` n'est pas utilise |
+| `resetOn` | string | Moment ou la ressource est reinitalisee — voir valeurs ci-dessous |
+
+Valeurs pour `resetOn` :
+
+| Valeur | Declencheur |
+|--------|-------------|
+| `'combatEnd'` | A la fin du combat |
+| `'safeRest'` | Au repos sur |
+| `'fieldRest'` | Au repos de terrain |
+| `'newDay'` | Au debut d'un nouveau jour |
+| `'encounterStart'` | Au debut du combat |
+| `'round'` | Au debut de chaque round |
+
+#### Proprietes de calcul du maximum
+
+| Propriete | Type | Description |
+|-----------|------|-------------|
+| `maxStat` | string | Statistique utilisee comme base : `'str'`, `'dex'`, `'int'`, `'wil'` |
+| `maxMultiplier` | number | Multiplicateur applique a la valeur de la statistique |
+| `maxLevelMultiplier` | number | Multiplicateur applique au niveau du personnage |
+| `maxProgression` | array | `[{ level, max }]` — ecrase le maximum a certains niveaux |
+| `maxLevelBonus` | array | `[{ level, bonus }]` — ajoute un bonus cumulatif au maximum a certains niveaux |
+
+#### Proprietes des pools de des
+
+| Propriete | Type | Description |
+|-----------|------|-------------|
+| `dieProgression` | array | `[{ level, dieSize }]` — definit la taille du de a certains niveaux (ex. `'d4'`, `'d6'`, `'d8'`, `'d10'`, `'d12'`, `'d20'`) |
+| `storageModule` | string | ID du module utilise pour le stockage persistant dans les flags de l'acteur (generalement `'system'`) |
+| `storageKey` | string | Cle de flag pour stocker le tableau de des |
+| `singleValueKey` | string | Cle de flag pour stocker la valeur unique combinee, en complement des des |
+
+---
 
 ### Licence
 
