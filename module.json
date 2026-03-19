@@ -27,9 +27,7 @@
     "scripts/module.js"
   ],
   "styles": [
-    {
-      "src": "styles/dm-helper.css"
-    }
+    "styles/dm-helper.css"
   ],
   "languages": [
     {
@@ -47,7 +45,7 @@
   ],
   "socket": true,
   "url": "https://github.com/kenlimero/nimble-dm-helper",
-  "manifest": "https://github.com/kenlimero/nimble-dm-helper/releases/latest/download/module.json",
-  "download": "https://github.com/kenlimero/nimble-dm-helper/releases/latest/download/module.zip",
+  "manifest": "https://github.com/kenlimero/nimble-dm-helper/releases/download/v1.8/module.json",
+  "download": "https://github.com/kenlimero/nimble-dm-helper/releases/download/v1.8/module.zip",
   "flags": {}
 }
