@@ -124,7 +124,7 @@ function registerHandlebarsHelpers() {
   console.log(`${MODULE_ID} | Handlebars helpers registered`);
 }
 
-Hooks.once('ready', () => {
+Hooks.once('ready', async () => {
   const playerAccess = game.settings.get(MODULE_ID, 'playerAccess');
   if (!game.user.isGM && !playerAccess) {
     console.log(`${MODULE_ID} | Not a GM and player access disabled, module disabled`);
@@ -132,6 +132,19 @@ Hooks.once('ready', () => {
   }
 
   console.log(`${MODULE_ID} | Ready (${game.user.isGM ? 'GM' : 'Player'})`);
+
+  // Valider la persistance : si desactivee, nettoyer les donnees persistees
+  if (game.user.isGM) {
+    const persistEnabled = game.settings.get(MODULE_ID, 'persistPinnedActors');
+    if (!persistEnabled) {
+      const pinnedActors = game.settings.get(MODULE_ID, 'pinnedActors');
+      if (pinnedActors.length > 0) {
+        await game.settings.set(MODULE_ID, 'pinnedActors', []);
+        console.log(`${MODULE_ID} | Persistence disabled, cleared ${pinnedActors.length} pinned actors`);
+      }
+    }
+  }
+
   registerHooks();
 
   // Creer instance globale

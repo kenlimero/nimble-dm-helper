@@ -43,6 +43,14 @@ export class HpResource extends BaseResource {
         [`${basePath}.temp`]: newTemp,
         [`${basePath}.value`]: newHp
       });
+
+      // Auto-apply 1 wound when HP drops to 0
+      if (newHp === 0 && currentHp > 0) {
+        const wounds = system.attributes?.wounds || system.wounds || { value: 0, max: 6 };
+        const woundPath = system.attributes?.wounds ? 'system.attributes.wounds.value' : 'system.wounds.value';
+        const newWounds = Math.min(wounds.value + 1, wounds.max);
+        await actor.update({ [woundPath]: newWounds });
+      }
     } else {
       const newHp = Math.min(maxHp, currentHp + delta);
       await actor.update({ [`${basePath}.value`]: newHp });
